@@ -2236,13 +2236,22 @@
             // 虚拟摇杆控制
             const joystickArea = document.getElementById('joystickArea');
             const joystickKnob = document.getElementById('joystickKnob');
+            const shootBtn = document.getElementById('shootBtn');
             
-            let joystickTouching = false;
+            // 触摸状态追踪
+            let joystickTouchId = null;
+            let shootTouchId = null;
             let joystickStartPos = { x: 0, y: 0 };
+            let shootInterval = null;
             
+            // 摇杆触摸开始
             joystickArea.addEventListener('touchstart', function(e) {
                 e.preventDefault();
-                joystickTouching = true;
+                if (joystickTouchId !== null) return; // 已经有摇杆触摸了
+                
+                const touch = e.touches[e.touches.length - 1]; // 获取最新的触摸点
+                joystickTouchId = touch.identifier;
+                
                 const rect = joystickArea.getBoundingClientRect();
                 joystickStartPos = {
                     x: rect.left + rect.width / 2,
@@ -2251,59 +2260,104 @@
                 joystickActive = true;
             });
             
-            document.addEventListener('touchmove', function(e) {
-                if (!joystickTouching || !player) return;
-                
-                e.preventDefault();
-                const touch = e.touches[0];
-                const deltaX = touch.clientX - joystickStartPos.x;
-                const deltaY = touch.clientY - joystickStartPos.y;
-                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                const maxDistance = 40;
-                
-                if (distance > 0) {
-                    const normalizedX = deltaX / distance;
-                    const normalizedY = deltaY / distance;
-                    const clampedDistance = Math.min(distance, maxDistance);
-                    
-                    // 更新摇杆旋钮位置
-                    joystickPosition.x = normalizedX * clampedDistance;
-                    joystickPosition.y = normalizedY * clampedDistance;
-                    
-                    joystickKnob.style.transform = `translate(${joystickPosition.x}px, ${joystickPosition.y}px)`;
-                    
-                    // 移动玩家
-                    player.x += normalizedX * player.speed;
-                    player.y += normalizedY * player.speed;
-                    
-                    // 应用边界检测
-                    player.update();
-                }
-            });
-            
-            document.addEventListener('touchend', function(e) {
-                if (joystickTouching) {
-                    joystickTouching = false;
-                    joystickActive = false;
-                    joystickPosition = { x: 0, y: 0 };
-                    joystickKnob.style.transform = 'translate(0px, 0px)';
-                }
-            });
-            
-            // 射击按钮
-            const shootBtn = document.getElementById('shootBtn');
+            // 射击按钮触摸开始
             shootBtn.addEventListener('touchstart', function(e) {
                 e.preventDefault();
+                if (shootTouchId !== null) return; // 已经有射击触摸了
+                
+                const touch = e.touches[e.touches.length - 1];
+                shootTouchId = touch.identifier;
+                
+                // 立即射击一次
                 if (player && currentScreen === 'game' && gameRunning && !gamePaused) {
                     const newBullets = player.shoot();
                     bullets.push(...newBullets);
                 }
+                
+                // 开始连发射击
+                if (shootInterval) clearInterval(shootInterval);
+                shootInterval = setInterval(() => {
+                    if (player && currentScreen === 'game' && gameRunning && !gamePaused) {
+                        const newBullets = player.shoot();
+                        bullets.push(...newBullets);
+                    }
+                }, 150); // 每150毫秒射击一次
             });
             
-            // 防止触摸时的默认行为
+            // 全局触摸移动处理
             document.addEventListener('touchmove', function(e) {
                 e.preventDefault();
+                
+                // 处理所有触摸点
+                for (let i = 0; i < e.touches.length; i++) {
+                    const touch = e.touches[i];
+                    
+                    // 摇杆移动处理
+                    if (touch.identifier === joystickTouchId && player) {
+                        const deltaX = touch.clientX - joystickStartPos.x;
+                        const deltaY = touch.clientY - joystickStartPos.y;
+                        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                        const maxDistance = 40;
+                        
+                        if (distance > 0) {
+                            const normalizedX = deltaX / distance;
+                            const normalizedY = deltaY / distance;
+                            const clampedDistance = Math.min(distance, maxDistance);
+                            
+                            // 更新摇杆旋钮位置
+                            joystickPosition.x = normalizedX * clampedDistance;
+                            joystickPosition.y = normalizedY * clampedDistance;
+                            
+                            joystickKnob.style.transform = `translate(${joystickPosition.x}px, ${joystickPosition.y}px)`;
+                            
+                            // 移动玩家
+                            player.x += normalizedX * player.speed;
+                            player.y += normalizedY * player.speed;
+                            
+                            // 应用边界检测
+                            player.update();
+                        }
+                    }
+                }
             }, { passive: false });
+            
+            // 全局触摸结束处理
+            document.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                
+                // 检查哪些触摸点结束了
+                const activeTouchIds = Array.from(e.touches).map(touch => touch.identifier);
+                
+                // 摇杆触摸结束
+                if (joystickTouchId !== null && !activeTouchIds.includes(joystickTouchId)) {
+                    joystickTouchId = null;
+                    joystickActive = false;
+                    joystickPosition = { x: 0, y: 0 };
+                    joystickKnob.style.transform = 'translate(0px, 0px)';
+                }
+                
+                // 射击触摸结束
+                if (shootTouchId !== null && !activeTouchIds.includes(shootTouchId)) {
+                    shootTouchId = null;
+                    if (shootInterval) {
+                        clearInterval(shootInterval);
+                        shootInterval = null;
+                    }
+                }
+            });
+            
+            // 触摸取消处理（例如用户手指移出屏幕）
+            document.addEventListener('touchcancel', function(e) {
+                joystickTouchId = null;
+                shootTouchId = null;
+                joystickActive = false;
+                joystickPosition = { x: 0, y: 0 };
+                joystickKnob.style.transform = 'translate(0px, 0px)';
+                if (shootInterval) {
+                    clearInterval(shootInterval);
+                    shootInterval = null;
+                }
+            });
         }
 
         // ============================================

@@ -425,6 +425,44 @@
             right: 70px;
         }
 
+        /* 音乐控制按钮 */
+        .music-toggle-btn {
+            position: absolute;
+            right: var(--spacing-sm);
+            top: calc(50% - 120px);
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 5;
+            color: white;
+        }
+
+        .music-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .music-toggle-btn.muted {
+            background: rgba(255, 100, 100, 0.2);
+            color: #ff6b6b;
+        }
+
+        .music-toggle-btn.muted:hover {
+            background: rgba(255, 100, 100, 0.3);
+        }
+
         /* 血槽系统 */
         .health-bar {
             position: absolute;
@@ -866,6 +904,11 @@
                     </div>
                 </div>
                 
+                <!-- 音乐控制按钮 -->
+                <button class="music-toggle-btn" id="musicToggleBtn" onclick="toggleBackgroundMusic()">
+                    🎵
+                </button>
+                
                 <!-- 血槽显示 -->
                 <div class="health-bar" id="healthBar"></div>
             </div>
@@ -1020,6 +1063,7 @@
         // 音效控制
         let audioEnabled = true;
         let speechEnabled = true;
+        let musicPlaying = true; // 背景音乐播放状态
 
         // ============================================
         // 单词数据库 (完全复用 snackwordsgame 的数据)
@@ -1265,6 +1309,15 @@
             };
             document.addEventListener('click', startMusicOnInteraction);
             document.addEventListener('touchstart', startMusicOnInteraction);
+            
+            // 初始化音乐按钮状态
+            const musicBtn = document.getElementById('musicToggleBtn');
+            if (musicBtn) {
+                musicBtn.textContent = musicPlaying ? '🎵' : '🔇';
+                if (!musicPlaying) {
+                    musicBtn.classList.add('muted');
+                }
+            }
             
             console.log('✅ 游戏初始化完成');
         }
@@ -2579,7 +2632,7 @@
         }
         
         function playBackgroundMusic() {
-            if (!audioEnabled) return;
+            if (!audioEnabled || !musicPlaying) return;
             
             if (backgroundMusic) {
                 try {
@@ -2627,6 +2680,60 @@
                 playBackgroundMusic();
             } else {
                 stopBackgroundMusic();
+            }
+        }
+        
+        function toggleBackgroundMusic() {
+            musicPlaying = !musicPlaying;
+            const musicBtn = document.getElementById('musicToggleBtn');
+            
+            if (musicPlaying) {
+                // 开启背景音乐
+                if (backgroundMusic) {
+                    try {
+                        backgroundMusic.play();
+                        console.log('🎵 背景音乐开启');
+                    } catch (error) {
+                        console.warn('⚠️ 播放背景音乐失败:', error);
+                    }
+                }
+                // 也开启合成音频（如果正在使用）
+                if (backgroundMusicSource && audioContext) {
+                    try {
+                        playBackgroundMusic();
+                    } catch (error) {
+                        console.warn('⚠️ 播放合成音乐失败:', error);
+                    }
+                }
+                
+                // 更新按钮状态
+                musicBtn.textContent = '🎵';
+                musicBtn.classList.remove('muted');
+                console.log('🎵 背景音乐已开启');
+            } else {
+                // 暂停背景音乐
+                if (backgroundMusic && !backgroundMusic.paused) {
+                    try {
+                        backgroundMusic.pause();
+                        console.log('🎵 背景音乐暂停');
+                    } catch (error) {
+                        console.warn('⚠️ 暂停背景音乐失败:', error);
+                    }
+                }
+                // 也暂停合成音频
+                if (backgroundMusicSource) {
+                    try {
+                        backgroundMusicSource.stop();
+                        backgroundMusicSource = null;
+                    } catch (error) {
+                        console.warn('⚠️ 停止合成音乐失败:', error);
+                    }
+                }
+                
+                // 更新按钮状态
+                musicBtn.textContent = '🔇';
+                musicBtn.classList.add('muted');
+                console.log('🔇 背景音乐已暂停');
             }
         }
         

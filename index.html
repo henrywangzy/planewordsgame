@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飞机射击单词 - 移动端H5游戏</title>
+    <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* 主色调 - 深空蓝色系 */
+            --primary-blue: #1a237e;
+            --light-blue: #3f51b5;
+            --dark-blue: #000051;
+            
+            /* 强调色 */
+            --laser-green: #4CAF50;
+            --warning-orange: #FF9800;
+            --error-red: #F44336;
+            --accent-yellow: #FFC107;
+            
+            /* 文字色彩 */
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-light: #ffffff;
+            
+            /* 间距系统 */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 12px;
+            --spacing-lg: 16px;
+            --spacing-xl: 20px;
+            --spacing-2xl: 24px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            min-height: 100vh;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* 手机端容器 */
+        .phone-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: 390px;
+            max-height: 844px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, #0a0e27 0%, #1a237e 50%, #000051 100%);
+        }
+
+        /* 平板和桌面适配 */
+        @media (min-width: 768px) {
+            body {
+                background: #f0f2f5;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .phone-container {
+                border: 8px solid #333;
+                border-radius: 30px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            }
+        }
+
+        /* 屏幕切换系统 */
+        .screen {
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            top: 0;
+            left: 0;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .screen.transition-enter {
+            transform: translateX(100%);
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        /* 开始界面样式 */
+        #startScreen {
+            background: linear-gradient(135deg, 
+                rgba(26, 35, 126, 0.9), 
+                rgba(0, 0, 81, 0.9)
+            );
+            color: var(--text-light);
+            text-align: center;
+            padding: var(--spacing-2xl);
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: var(--spacing-xl);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { text-shadow: 2px 2px 4px rgba(76, 175, 80, 0.3); }
+            to { text-shadow: 2px 2px 8px rgba(76, 175, 80, 0.6); }
+        }
+
+        .game-subtitle {
+            font-size: 1.1rem;
+            margin-bottom: var(--spacing-2xl);
+            opacity: 0.9;
+        }
+
+        /* 按钮样式 */
+        .button {
+            background: linear-gradient(135deg, var(--laser-green), #45a049);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: var(--spacing-lg) var(--spacing-2xl);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: var(--spacing-sm) 0;
+            min-width: 200px;
+            min-height: 44px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* 次要按钮样式 */
+        .button-secondary {
+            background: linear-gradient(135deg, var(--light-blue), var(--primary-blue));
+            box-shadow: 0 4px 12px rgba(63, 81, 181, 0.3);
+        }
+
+        .button-secondary:hover {
+            box-shadow: 0 6px 16px rgba(63, 81, 181, 0.4);
+        }
+
+        /* 年级选择器 */
+        .grade-selector {
+            margin: var(--spacing-xl) 0;
+        }
+
+        .grade-selector label {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+        }
+
+        .grade-select {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: var(--spacing-md) var(--spacing-lg);
+            font-size: 1rem;
+            min-width: 120px;
+            cursor: pointer;
+        }
+
+        .grade-select option {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        /* 游戏界面样式 */
+        #gameScreen {
+            background: radial-gradient(circle at center, #0a0e27 0%, #000051 100%);
+            position: relative;
+            padding: 0;
+        }
+
+        /* 星空背景 */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 游戏画布 */
+        .game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            background: transparent;
+        }
+
+        /* 游戏UI层 */
+        .game-ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* 顶部信息栏 */
+        .game-header {
+            position: absolute;
+            top: var(--spacing-lg);
+            left: var(--spacing-lg);
+            right: var(--spacing-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            color: var(--text-light);
+            font-weight: 600;
+            z-index: 4;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .target-word {
+            font-size: 1.2rem;
+            animation: targetPulse 2s ease-in-out infinite;
+        }
+
+        .target-chinese {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        @keyframes targetPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .header-right {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        /* 移动端虚拟控制器 */
+        .mobile-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 180px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* 左侧摇杆 */
+        .joystick-area {
+            position: absolute;
+            bottom: var(--spacing-xl);
+            left: var(--spacing-xl);
+            width: 100px;
+            height: 100px;
+            pointer-events: auto;
+        }
+
+        .joystick-base {
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .joystick-knob {
+            width: 40%;
+            height: 40%;
+            background: rgba(76, 175, 80, 0.8);
+            border: 2px solid var(--laser-green);
+            border-radius: 50%;
+            position: absolute;
+            transition: all 0.1s ease;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+        }
+
+        /* 右侧射击按钮 */
+        .shoot-button {
+            position: absolute;
+            bottom: var(--spacing-xl);
+            right: var(--spacing-xl);
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 99, 71, 0.8);
+            border: 3px solid rgba(255, 99, 71, 1);
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(255, 99, 71, 0.4);
+        }
+
+        .shoot-button:active {
+            transform: scale(0.95);
+            background: rgba(255, 99, 71, 1);
+        }
+
+        /* 暂停和设置按钮 */
+        .pause-button, .settings-button {
+            position: absolute;
+            top: var(--spacing-lg);
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            color: var(--text-light);
+            font-size: 1.2rem;
+            cursor: pointer;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 4;
+        }
+
+        .pause-button {
+            right: var(--spacing-lg);
+        }
+
+        .settings-button {
+            right: 70px;
+        }
+
+        .pause-button:hover, .settings-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* 结束界面样式 */
+        #gameOverScreen {
+            background: linear-gradient(135deg, 
+                rgba(244, 67, 54, 0.9), 
+                rgba(139, 195, 74, 0.9)
+            );
+            color: var(--text-light);
+            text-align: center;
+            padding: var(--spacing-2xl);
+        }
+
+        .game-over-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: var(--spacing-xl);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .score-display {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: var(--spacing-xl);
+            margin: var(--spacing-xl) 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: var(--spacing-sm) 0;
+            padding: var(--spacing-xs) 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .score-label {
+            font-weight: 600;
+        }
+
+        .score-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-yellow);
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 350px) {
+            .game-title {
+                font-size: 2rem;
+            }
+            .button {
+                min-width: 160px;
+                padding: var(--spacing-md) var(--spacing-lg);
+            }
+        }
+
+        @media (max-height: 600px) {
+            .mobile-controls {
+                height: 140px;
+            }
+            .joystick-area {
+                width: 80px;
+                height: 80px;
+            }
+            .shoot-button {
+                width: 65px;
+                height: 65px;
+                font-size: 1.2rem;
+            }
+        }
+
+        /* 触控优化 */
+        .touch-target {
+            touch-action: manipulation;
+        }
+
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <!-- 开始界面 -->
+        <div id="startScreen" class="screen active">
+            <h1 class="game-title">🚀 飞机射击单词</h1>
+            <p class="game-subtitle">边射击边学英语，寓教于乐的H5游戏</p>
+            
+            <div class="grade-selector">
+                <label for="gradeSelect">选择年级:</label>
+                <select id="gradeSelect" class="grade-select">
+                    <option value="1">一年级 (基础词汇)</option>
+                    <option value="2">二年级 (日常用词)</option>
+                    <option value="3" selected>三年级 (常用词汇)</option>
+                    <option value="4">四年级 (进阶词汇)</option>
+                    <option value="5">五年级 (高级词汇)</option>
+                    <option value="6">六年级 (复杂词汇)</option>
+                </select>
+            </div>
+
+            <button id="startGameBtn" class="button">
+                <span class="loading" id="startLoading" style="display: none;"></span>
+                开始游戏 🎮
+            </button>
+            
+            <button id="instructionsBtn" class="button button-secondary">
+                游戏说明 📖
+            </button>
+            
+            <button id="testSpeechBtn" class="button button-secondary">
+                测试语音 🔊
+            </button>
+        </div>
+
+        <!-- 游戏界面 -->
+        <div id="gameScreen" class="screen">
+            <!-- 星空背景 -->
+            <canvas class="stars" id="starsCanvas"></canvas>
+            
+            <!-- 主游戏画布 -->
+            <canvas class="game-canvas" id="gameCanvas"></canvas>
+            
+            <!-- 游戏UI层 -->
+            <div class="game-ui">
+                <!-- 顶部信息栏 -->
+                <div class="game-header">
+                    <div class="header-left">
+                        <div class="target-word" id="targetWord">目标: Loading...</div>
+                        <div class="target-chinese" id="targetChinese">加载中...</div>
+                    </div>
+                    <div class="header-right">
+                        <div>分数: <span id="scoreDisplay">0</span></div>
+                        <div>生命: <span id="livesDisplay">3</span> ❤️</div>
+                        <div>武器: <span id="weaponDisplay">基础</span></div>
+                    </div>
+                </div>
+
+                <!-- 暂停和设置按钮 -->
+                <button id="pauseBtn" class="pause-button">⏸️</button>
+                <button id="settingsBtn" class="settings-button">⚙️</button>
+            </div>
+
+            <!-- 移动端虚拟控制器 -->
+            <div class="mobile-controls">
+                <!-- 左侧摇杆 -->
+                <div class="joystick-area" id="joystickArea">
+                    <div class="joystick-base">
+                        <div class="joystick-knob" id="joystickKnob"></div>
+                    </div>
+                </div>
+
+                <!-- 右侧射击按钮 -->
+                <button class="shoot-button touch-target" id="shootBtn">🔥</button>
+            </div>
+        </div>
+
+        <!-- 游戏结束界面 -->
+        <div id="gameOverScreen" class="screen">
+            <h2 class="game-over-title">🎯 游戏结束</h2>
+            
+            <div class="score-display">
+                <div class="score-item">
+                    <span class="score-label">最终得分</span>
+                    <span class="score-value" id="finalScore">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">击中敌机</span>
+                    <span class="score-value" id="enemiesHit">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">正确单词</span>
+                    <span class="score-value" id="correctWords">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">学习单词数</span>
+                    <span class="score-value" id="wordsLearned">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">最高连击</span>
+                    <span class="score-value" id="maxCombo">0</span>
+                </div>
+            </div>
+
+            <button id="playAgainBtn" class="button">
+                再玩一次 🔄
+            </button>
+            
+            <button id="backToMenuBtn" class="button button-secondary">
+                返回主菜单 🏠
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 全局变量定义
+        // ============================================
+        
+        // 游戏状态
+        let gameRunning = false;
+        let gamePaused = false;
+        let currentScreen = 'start';
+        let selectedGrade = 3;
+        
+        // 游戏对象
+        let player = null;
+        let enemies = [];
+        let bullets = [];
+        let particles = [];
+        let targetWord = null;
+        let currentWordData = null;
+        
+        // 游戏统计
+        let score = 0;
+        let lives = 3;
+        let enemiesHitCount = 0;
+        let correctWordsCount = 0;
+        let wordsLearnedCount = 0;
+        let combo = 0;
+        let maxCombo = 0;
+        let weaponLevel = 1;
+        
+        // Canvas 相关
+        let canvas, ctx, starsCanvas, starsCtx;
+        let canvasWidth = 390;
+        let canvasHeight = 844;
+        
+        // 输入控制
+        let keys = {};
+        let joystickActive = false;
+        let joystickCenter = { x: 50, y: 50 };
+        let joystickPosition = { x: 0, y: 0 };
+        
+        // 游戏循环
+        let gameLoopId = null;
+        let lastTime = 0;
+        let deltaTime = 0;
+
+        // 音效控制
+        let audioEnabled = true;
+        let speechEnabled = true;
+
+        // ============================================
+        // 单词数据库 (完全复用 snackwordsgame 的数据)
+        // ============================================
+        
+        const words = {
+            1: [
+                // 基础名词 - 动物类
+                { word: 'Cat', chinese: '猫', pronunciation: '/kæt/', example: 'The cat is cute. 这只猫很可爱。' },
+                { word: 'Dog', chinese: '狗', pronunciation: '/dɔːɡ/', example: 'My dog is friendly. 我的狗很友好。' },
+                { word: 'Bird', chinese: '鸟', pronunciation: '/bɜːrd/', example: 'Birds can fly. 鸟会飞。' },
+                { word: 'Fish', chinese: '鱼', pronunciation: '/fɪʃ/', example: 'Fish can swim. 鱼会游泳。' },
+                { word: 'Duck', chinese: '鸭子', pronunciation: '/dʌk/', example: 'The duck swims in the pond. 鸭子在池塘里游泳。' },
+                { word: 'Bear', chinese: '熊', pronunciation: '/ber/', example: 'The bear is big. 这只熊很大。' },
+                { word: 'Pig', chinese: '猪', pronunciation: '/pɪɡ/', example: 'The pig is pink. 这只猪是粉色的。' },
+                { word: 'Cow', chinese: '牛', pronunciation: '/kaʊ/', example: 'The cow gives milk. 奶牛产奶。' },
+                { word: 'Horse', chinese: '马', pronunciation: '/hɔːrs/', example: 'The horse runs fast. 马跑得很快。' },
+                { word: 'Sheep', chinese: '绵羊', pronunciation: '/ʃiːp/', example: 'The sheep has wool. 绵羊有羊毛。' },
+                
+                // 基础名词 - 食物类
+                { word: 'Apple', chinese: '苹果', pronunciation: '/ˈæp.əl/', example: 'I like to eat apples. 我喜欢吃苹果。' },
+                { word: 'Banana', chinese: '香蕉', pronunciation: '/bəˈnæn.ə/', example: 'The banana is yellow. 香蕉是黄色的。' },
+                { word: 'Orange', chinese: '橙子', pronunciation: '/ˈɔːr.ɪndʒ/', example: 'The orange is sweet. 橙子很甜。' },
+                { word: 'Bread', chinese: '面包', pronunciation: '/bred/', example: 'I eat bread for breakfast. 我早餐吃面包。' },
+                { word: 'Cake', chinese: '蛋糕', pronunciation: '/keɪk/', example: 'The cake is delicious. 蛋糕很美味。' },
+                { word: 'Milk', chinese: '牛奶', pronunciation: '/mɪlk/', example: 'I drink milk every day. 我每天喝牛奶。' },
+                { word: 'Egg', chinese: '鸡蛋', pronunciation: '/eɡ/', example: 'I cook an egg. 我煮一个鸡蛋。' },
+                { word: 'Rice', chinese: '米饭', pronunciation: '/raɪs/', example: 'Rice is my favorite food. 米饭是我最喜欢的食物。' },
+                { word: 'Water', chinese: '水', pronunciation: '/ˈwɔː.tər/', example: 'Water is important. 水很重要。' },
+                { word: 'Tea', chinese: '茶', pronunciation: '/tiː/', example: 'I drink tea in the afternoon. 我下午喝茶。' },
+                
+                // 基础名词 - 身体部位
+                { word: 'Head', chinese: '头', pronunciation: '/hed/', example: 'I wear a hat on my head. 我头上戴帽子。' },
+                { word: 'Face', chinese: '脸', pronunciation: '/feɪs/', example: 'She has a pretty face. 她有一张漂亮的脸。' },
+                { word: 'Eye', chinese: '眼睛', pronunciation: '/aɪ/', example: 'I have two eyes. 我有两只眼睛。' },
+                { word: 'Nose', chinese: '鼻子', pronunciation: '/noʊz/', example: 'My nose can smell. 我的鼻子能闻到气味。' },
+                { word: 'Mouth', chinese: '嘴巴', pronunciation: '/maʊθ/', example: 'I eat with my mouth. 我用嘴巴吃东西。' },
+                { word: 'Ear', chinese: '耳朵', pronunciation: '/ɪr/', example: 'I hear with my ears. 我用耳朵听声音。' },
+                { word: 'Hand', chinese: '手', pronunciation: '/hænd/', example: 'I write with my hand. 我用手写字。' },
+                { word: 'Foot', chinese: '脚', pronunciation: '/fʊt/', example: 'I walk with my feet. 我用脚走路。' },
+                
+                // 基础颜色
+                { word: 'Red', chinese: '红色', pronunciation: '/red/', example: 'The apple is red. 苹果是红色的。' },
+                { word: 'Blue', chinese: '蓝色', pronunciation: '/bluː/', example: 'The sky is blue. 天空是蓝色的。' },
+                { word: 'Green', chinese: '绿色', pronunciation: '/ɡriːn/', example: 'Grass is green. 草是绿色的。' },
+                { word: 'Yellow', chinese: '黄色', pronunciation: '/ˈjel.oʊ/', example: 'The sun is yellow. 太阳是黄色的。' },
+                { word: 'White', chinese: '白色', pronunciation: '/waɪt/', example: 'Snow is white. 雪是白色的。' },
+                { word: 'Black', chinese: '黑色', pronunciation: '/blæk/', example: 'Night is black. 夜晚是黑色的。' },
+            ],
+            2: [
+                // 家庭成员
+                { word: 'Mother', chinese: '妈妈', pronunciation: '/ˈmʌð.ər/', example: 'My mother cooks dinner. 我妈妈做晚饭。' },
+                { word: 'Father', chinese: '爸爸', pronunciation: '/ˈfɑː.ðər/', example: 'My father works hard. 我爸爸工作很努力。' },
+                { word: 'Sister', chinese: '姐妹', pronunciation: '/ˈsɪs.tər/', example: 'My sister is kind. 我姐姐很善良。' },
+                { word: 'Brother', chinese: '兄弟', pronunciation: '/ˈbrʌð.ər/', example: 'My brother plays soccer. 我哥哥踢足球。' },
+                { word: 'Baby', chinese: '婴儿', pronunciation: '/ˈbeɪ.bi/', example: 'The baby is sleeping. 婴儿在睡觉。' },
+                { word: 'Friend', chinese: '朋友', pronunciation: '/frend/', example: 'She is my best friend. 她是我最好的朋友。' },
+                { word: 'Teacher', chinese: '老师', pronunciation: '/ˈtiː.tʃər/', example: 'Our teacher is nice. 我们的老师很好。' },
+                { word: 'Student', chinese: '学生', pronunciation: '/ˈstuː.dənt/', example: 'I am a student. 我是一名学生。' },
+                
+                // 学校用品
+                { word: 'School', chinese: '学校', pronunciation: '/skuːl/', example: 'I go to school every day. 我每天上学。' },
+                { word: 'Classroom', chinese: '教室', pronunciation: '/ˈklæs.ruːm/', example: 'We study in the classroom. 我们在教室里学习。' },
+                { word: 'Desk', chinese: '课桌', pronunciation: '/desk/', example: 'Books are on my desk. 书在我的课桌上。' },
+                { word: 'Pencil', chinese: '铅笔', pronunciation: '/ˈpen.səl/', example: 'I write with a pencil. 我用铅笔写字。' },
+                { word: 'Paper', chinese: '纸', pronunciation: '/ˈpeɪ.pər/', example: 'I draw on paper. 我在纸上画画。' },
+                { word: 'Ruler', chinese: '尺子', pronunciation: '/ˈruː.lər/', example: 'I measure with a ruler. 我用尺子测量。' },
+                { word: 'Eraser', chinese: '橡皮', pronunciation: '/ɪˈreɪ.sər/', example: 'I use an eraser to correct mistakes. 我用橡皮改错误。' },
+                
+                // 日常用品
+                { word: 'Home', chinese: '家', pronunciation: '/hoʊm/', example: 'I love my home. 我爱我的家。' },
+                { word: 'Room', chinese: '房间', pronunciation: '/ruːm/', example: 'My room is clean. 我的房间很干净。' },
+                { word: 'Kitchen', chinese: '厨房', pronunciation: '/ˈkɪtʃ.ən/', example: 'Mom cooks in the kitchen. 妈妈在厨房做饭。' },
+                { word: 'Bathroom', chinese: '浴室', pronunciation: '/ˈbæθ.ruːm/', example: 'I brush my teeth in the bathroom. 我在浴室刷牙。' },
+                
+                // 衣物
+                { word: 'Clothes', chinese: '衣服', pronunciation: '/kloʊðz/', example: 'I wear clean clothes. 我穿干净的衣服。' },
+                { word: 'Dress', chinese: '连衣裙', pronunciation: '/dres/', example: 'She wears a beautiful dress. 她穿着一条漂亮的连衣裙。' },
+                { word: 'Coat', chinese: '外套', pronunciation: '/koʊt/', example: 'I wear a coat when it\'s cold. 天冷时我穿外套。' },
+                { word: 'Sock', chinese: '袜子', pronunciation: '/sɑːk/', example: 'My socks are warm. 我的袜子很暖和。' },
+            ],
+            3: [
+                // 动作动词
+                { word: 'Run', chinese: '跑', pronunciation: '/rʌn/', example: 'I can run fast. 我能跑得很快。' },
+                { word: 'Walk', chinese: '走', pronunciation: '/wɔːk/', example: 'I walk to school. 我走路上学。' },
+                { word: 'Jump', chinese: '跳', pronunciation: '/dʒʌmp/', example: 'I can jump high. 我能跳得很高。' },
+                { word: 'Swim', chinese: '游泳', pronunciation: '/swɪm/', example: 'I love to swim. 我喜欢游泳。' },
+                { word: 'Fly', chinese: '飞', pronunciation: '/flaɪ/', example: 'Birds can fly. 鸟会飞。' },
+                { word: 'Climb', chinese: '爬', pronunciation: '/klaɪm/', example: 'I climb the tree. 我爬树。' },
+                { word: 'Sleep', chinese: '睡觉', pronunciation: '/sliːp/', example: 'I sleep at night. 我晚上睡觉。' },
+                { word: 'Wake', chinese: '醒来', pronunciation: '/weɪk/', example: 'I wake up early. 我起得很早。' },
+                { word: 'Laugh', chinese: '笑', pronunciation: '/læf/', example: 'The joke makes me laugh. 这个笑话让我笑。' },
+                { word: 'Cry', chinese: '哭', pronunciation: '/kraɪ/', example: 'Don\'t cry, be happy. 别哭，开心点。' },
+                
+                // 时间概念
+                { word: 'Morning', chinese: '早晨', pronunciation: '/ˈmɔːr.nɪŋ/', example: 'Good morning! 早上好！' },
+                { word: 'Afternoon', chinese: '下午', pronunciation: '/ˌæf.tərˈnuːn/', example: 'I study in the afternoon. 我下午学习。' },
+                { word: 'Evening', chinese: '晚上', pronunciation: '/ˈiːv.nɪŋ/', example: 'We have dinner in the evening. 我们晚上吃晚饭。' },
+                { word: 'Night', chinese: '夜晚', pronunciation: '/naɪt/', example: 'Good night! 晚安！' },
+                { word: 'Today', chinese: '今天', pronunciation: '/təˈdeɪ/', example: 'Today is sunny. 今天阳光明媚。' },
+                { word: 'Tomorrow', chinese: '明天', pronunciation: '/təˈmɔːr.oʊ/', example: 'Tomorrow is Monday. 明天是星期一。' },
+                { word: 'Yesterday', chinese: '昨天', pronunciation: '/ˈjes.tər.deɪ/', example: 'Yesterday was fun. 昨天很有趣。' },
+                
+                // 天气
+                { word: 'Weather', chinese: '天气', pronunciation: '/ˈweð.ər/', example: 'The weather is nice. 天气很好。' },
+                { word: 'Sunny', chinese: '晴朗的', pronunciation: '/ˈsʌn.i/', example: 'It\'s a sunny day. 今天是个晴天。' },
+                { word: 'Rainy', chinese: '下雨的', pronunciation: '/ˈreɪ.ni/', example: 'It\'s a rainy day. 今天下雨。' },
+                { word: 'Cloudy', chinese: '多云的', pronunciation: '/ˈklaʊ.di/', example: 'The sky is cloudy. 天空多云。' },
+                { word: 'Windy', chinese: '有风的', pronunciation: '/ˈwɪn.di/', example: 'It\'s windy outside. 外面有风。' },
+                { word: 'Snow', chinese: '雪', pronunciation: '/snoʊ/', example: 'Snow is white and cold. 雪是白色的，很冷。' },
+                
+                // 数字
+                { word: 'One', chinese: '一', pronunciation: '/wʌn/', example: 'I have one book. 我有一本书。' },
+                { word: 'Two', chinese: '二', pronunciation: '/tuː/', example: 'Two cats are playing. 两只猫在玩耍。' },
+                { word: 'Three', chinese: '三', pronunciation: '/θriː/', example: 'I see three birds. 我看到三只鸟。' },
+                { word: 'Four', chinese: '四', pronunciation: '/fɔːr/', example: 'Four seasons in a year. 一年有四个季节。' },
+                { word: 'Five', chinese: '五', pronunciation: '/faɪv/', example: 'I have five fingers. 我有五根手指。' },
+            ],
+            4: [
+                // 更复杂的概念
+                { word: 'Beautiful', chinese: '美丽的', pronunciation: '/ˈbjuː.t̬ə.fəl/', example: 'The flower is beautiful. 这朵花很美丽。' },
+                { word: 'Important', chinese: '重要的', pronunciation: '/ɪmˈpɔːr.tənt/', example: 'Study is important. 学习很重要。' },
+                { word: 'Different', chinese: '不同的', pronunciation: '/ˈdɪf.ər.ənt/', example: 'We are all different. 我们都不一样。' },
+                { word: 'Interesting', chinese: '有趣的', pronunciation: '/ˈɪn.trə.stɪŋ/', example: 'This book is interesting. 这本书很有趣。' },
+                { word: 'Difficult', chinese: '困难的', pronunciation: '/ˈdɪf.ə.kəlt/', example: 'Math can be difficult. 数学可能很难。' },
+                { word: 'Popular', chinese: '受欢迎的', pronunciation: '/ˈpɑːp.jə.lər/', example: 'This song is popular. 这首歌很受欢迎。' },
+                
+                // 学科词汇
+                { word: 'Science', chinese: '科学', pronunciation: '/ˈsaɪ.əns/', example: 'I love science class. 我喜欢科学课。' },
+                { word: 'History', chinese: '历史', pronunciation: '/ˈhɪs.tər.i/', example: 'History tells us about the past. 历史告诉我们过去的事情。' },
+                { word: 'Geography', chinese: '地理', pronunciation: '/dʒiˈɑː.ɡrə.fi/', example: 'Geography is about places. 地理是关于地方的。' },
+                { word: 'Language', chinese: '语言', pronunciation: '/ˈlæŋ.ɡwɪdʒ/', example: 'English is a language. 英语是一种语言。' },
+                { word: 'Mathematics', chinese: '数学', pronunciation: '/ˌmæθ.əˈmæt.ɪks/', example: 'Mathematics helps us solve problems. 数学帮助我们解决问题。' },
+                
+                // 自然环境
+                { word: 'Mountain', chinese: '山', pronunciation: '/ˈmaʊn.t̬ən/', example: 'The mountain is very high. 这座山很高。' },
+                { word: 'River', chinese: '河流', pronunciation: '/ˈrɪv.ər/', example: 'Fish live in the river. 鱼生活在河里。' },
+                { word: 'Ocean', chinese: '海洋', pronunciation: '/ˈoʊ.ʃən/', example: 'The ocean is vast and blue. 海洋广阔而蔚蓝。' },
+                { word: 'Forest', chinese: '森林', pronunciation: '/ˈfɔːr.ɪst/', example: 'Many animals live in the forest. 许多动物生活在森林里。' },
+                { word: 'Desert', chinese: '沙漠', pronunciation: '/ˈdez.ɚt/', example: 'The desert is hot and dry. 沙漠炎热干燥。' },
+                
+                // 情感表达
+                { word: 'Happy', chinese: '快乐的', pronunciation: '/ˈhæp.i/', example: 'I am happy today. 我今天很快乐。' },
+                { word: 'Sad', chinese: '悲伤的', pronunciation: '/sæd/', example: 'Don\'t be sad. 别伤心。' },
+                { word: 'Excited', chinese: '兴奋的', pronunciation: '/ɪkˈsaɪ.t̬ɪd/', example: 'I am excited about the trip. 我对这次旅行感到兴奋。' },
+                { word: 'Surprised', chinese: '惊讶的', pronunciation: '/sɚˈpraɪzd/', example: 'I was surprised by the gift. 我对这个礼物感到惊讶。' },
+                { word: 'Worried', chinese: '担心的', pronunciation: '/ˈwɝː.id/', example: 'Mom is worried about me. 妈妈为我担心。' },
+            ],
+            5: [
+                // 高级词汇
+                { word: 'Adventure', chinese: '冒险', pronunciation: '/ədˈven.tʃɚ/', example: 'Reading is an adventure. 阅读是一场冒险。' },
+                { word: 'Discovery', chinese: '发现', pronunciation: '/dɪˈskʌv.ɚ.i/', example: 'Science leads to new discoveries. 科学带来新发现。' },
+                { word: 'Invention', chinese: '发明', pronunciation: '/ɪnˈven.ʃən/', example: 'The computer is a great invention. 电脑是伟大的发明。' },
+                { word: 'Environment', chinese: '环境', pronunciation: '/ɪnˈvaɪ.rən.mənt/', example: 'We must protect our environment. 我们必须保护环境。' },
+                { word: 'Technology', chinese: '技术', pronunciation: '/tekˈnɑː.lə.dʒi/', example: 'Technology changes our lives. 技术改变我们的生活。' },
+                
+                // 抽象概念
+                { word: 'Imagination', chinese: '想象力', pronunciation: '/ɪˌmædʒ.əˈneɪ.ʃən/', example: 'Children have great imagination. 孩子们有很强的想象力。' },
+                { word: 'Creativity', chinese: '创造力', pronunciation: '/ˌkri.eɪˈtɪv.ə.t̬i/', example: 'Art develops creativity. 艺术培养创造力。' },
+                { word: 'Responsibility', chinese: '责任', pronunciation: '/rɪˌspɑːn.səˈbɪl.ə.t̬i/', example: 'We have a responsibility to help others. 我们有帮助他人的责任。' },
+                { word: 'Opportunity', chinese: '机会', pronunciation: '/ˌɑːp.ɚˈtuː.nə.t̬i/', example: 'Education gives us opportunities. 教育给我们机会。' },
+                { word: 'Achievement', chinese: '成就', pronunciation: '/əˈtʃiːv.mənt/', example: 'Winning the game was a great achievement. 赢得比赛是一个巨大的成就。' },
+                
+                // 科学技术
+                { word: 'Experiment', chinese: '实验', pronunciation: '/ɪkˈsper.ə.mənt/', example: 'We did a science experiment. 我们做了一个科学实验。' },
+                { word: 'Research', chinese: '研究', pronunciation: '/ˈriː.sɝːtʃ/', example: 'Research helps us learn new things. 研究帮助我们学习新事物。' },
+                { word: 'Information', chinese: '信息', pronunciation: '/ˌɪn.fɚˈmeɪ.ʃən/', example: 'Books contain useful information. 书籍包含有用的信息。' },
+                { word: 'Communication', chinese: '交流', pronunciation: '/kəˌmjuː.nəˈkeɪ.ʃən/', example: 'Good communication is important. 良好的交流很重要。' },
+                
+                // 文化艺术
+                { word: 'Culture', chinese: '文化', pronunciation: '/ˈkʌl.tʃɚ/', example: 'Every country has its own culture. 每个国家都有自己的文化。' },
+                { word: 'Traditional', chinese: '传统的', pronunciation: '/trəˈdɪʃ.ən.əl/', example: 'We celebrate traditional festivals. 我们庆祝传统节日。' },
+                { word: 'Modern', chinese: '现代的', pronunciation: '/ˈmɑː.dɚn/', example: 'We live in a modern world. 我们生活在现代世界。' },
+                { word: 'Ancient', chinese: '古代的', pronunciation: '/ˈeɪn.ʃənt/', example: 'Ancient civilizations were amazing. 古代文明令人惊叹。' },
+            ],
+            6: [
+                // 复杂学术词汇
+                { word: 'Philosophy', chinese: '哲学', pronunciation: '/fəˈlɑː.sə.fi/', example: 'Philosophy helps us think about life. 哲学帮助我们思考生活。' },
+                { word: 'Psychology', chinese: '心理学', pronunciation: '/saɪˈkɑː.lə.dʒi/', example: 'Psychology studies how the mind works. 心理学研究大脑如何工作。' },
+                { word: 'Democracy', chinese: '民主', pronunciation: '/dɪˈmɑː.krə.si/', example: 'Democracy gives people a voice. 民主让人民有发言权。' },
+                { word: 'Independence', chinese: '独立', pronunciation: '/ˌɪn.dɪˈpen.dəns/', example: 'The country gained independence. 这个国家获得了独立。' },
+                { word: 'Revolution', chinese: '革命', pronunciation: '/ˌrev.əˈluː.ʃən/', example: 'The industrial revolution changed everything. 工业革命改变了一切。' },
+                
+                // 全球化概念
+                { word: 'Globalization', chinese: '全球化', pronunciation: '/ˌɡloʊ.bəl.əˈzeɪ.ʃən/', example: 'Globalization connects the world. 全球化连接世界。' },
+                { word: 'International', chinese: '国际的', pronunciation: '/ˌɪn.tɚˈnæʃ.ən.əl/', example: 'International cooperation is important. 国际合作很重要。' },
+                { word: 'Organization', chinese: '组织', pronunciation: '/ˌɔːr.ɡən.əˈzeɪ.ʃən/', example: 'The UN is a global organization. 联合国是一个全球组织。' },
+                { word: 'Community', chinese: '社区', pronunciation: '/kəˈmjuː.nə.t̬i/', example: 'We are part of a global community. 我们是全球社区的一部分。' },
+                
+                // 环境与可持续发展
+                { word: 'Sustainability', chinese: '可持续性', pronunciation: '/səˌsteɪ.nəˈbɪl.ə.t̬i/', example: 'Sustainability protects our future. 可持续性保护我们的未来。' },
+                { word: 'Conservation', chinese: '保护', pronunciation: '/ˌkɑːn.sɚˈveɪ.ʃən/', example: 'Wildlife conservation is crucial. 野生动物保护至关重要。' },
+                { word: 'Renewable', chinese: '可再生的', pronunciation: '/rɪˈnuː.ə.bəl/', example: 'Solar energy is renewable. 太阳能是可再生的。' },
+                { word: 'Biodiversity', chinese: '生物多样性', pronunciation: '/ˌbaɪ.oʊ.daɪˈvɝː.sə.t̬i/', example: 'Biodiversity is essential for ecosystems. 生物多样性对生态系统至关重要。' },
+                
+                // 批判性思维
+                { word: 'Analysis', chinese: '分析', pronunciation: '/əˈnæl.ə.sɪs/', example: 'Critical analysis helps us understand. 批判性分析帮助我们理解。' },
+                { word: 'Evidence', chinese: '证据', pronunciation: '/ˈev.ə.dəns/', example: 'Scientists need evidence for their theories. 科学家需要证据来支持他们的理论。' },
+                { word: 'Hypothesis', chinese: '假设', pronunciation: '/haɪˈpɑː.θə.sɪs/', example: 'A hypothesis is an educated guess. 假设是有根据的猜测。' },
+                { word: 'Conclusion', chinese: '结论', pronunciation: '/kənˈkluː.ʒən/', example: 'The research led to an important conclusion. 研究得出了重要结论。' },
+            ]
+        };
+
+        // ============================================
+        // 初始化函数
+        // ============================================
+        
+        function init() {
+            console.log('🚀 初始化飞机射击单词游戏...');
+            
+            // 获取Canvas元素
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            starsCanvas = document.getElementById('starsCanvas');
+            starsCtx = starsCanvas.getContext('2d');
+            
+            // 设置Canvas尺寸
+            resizeCanvas();
+            
+            // 绑定事件监听器
+            bindEventListeners();
+            
+            // 初始化星空背景
+            initStars();
+            
+            // 初始化音频系统
+            initAudio();
+            
+            console.log('✅ 游戏初始化完成');
+        }
+        
+        function resizeCanvas() {
+            const container = document.querySelector('.phone-container');
+            canvasWidth = container.offsetWidth;
+            canvasHeight = container.offsetHeight;
+            
+            // 设置Canvas尺寸
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            starsCanvas.width = canvasWidth;
+            starsCanvas.height = canvasHeight;
+            
+            // 设置高分辨率支持
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = canvasWidth * dpr;
+            canvas.height = canvasHeight * dpr;
+            starsCanvas.width = canvasWidth * dpr;
+            starsCanvas.height = canvasHeight * dpr;
+            
+            canvas.style.width = canvasWidth + 'px';
+            canvas.style.height = canvasHeight + 'px';
+            starsCanvas.style.width = canvasWidth + 'px';
+            starsCanvas.style.height = canvasHeight + 'px';
+            
+            ctx.scale(dpr, dpr);
+            starsCtx.scale(dpr, dpr);
+        }
+
+        // ============================================
+        // 语音系统 (完全复用 snackwordsgame 的实现)
+        // ============================================
+        
+        function playWordReading(wordData) {
+            console.log('🔊 播放单词朗读:', wordData);
+            
+            // 检查游戏状态，如果游戏暂停或结束，不播放语音
+            if (gamePaused || !gameRunning) {
+                console.log('⏸️ 游戏暂停或结束，跳过语音播放');
+                return;
+            }
+            
+            // 检查语音开关
+            if (!speechEnabled) {
+                console.log('🔇 语音功能已关闭');
+                return;
+            }
+            
+            // 使用Web Speech API进行单词朗读
+            if ('speechSynthesis' in window) {
+                try {
+                    // 取消任何正在进行的朗读
+                    speechSynthesis.cancel();
+                    
+                    // 先朗读英文单词
+                    const englishUtterance = new SpeechSynthesisUtterance(wordData.word);
+                    englishUtterance.lang = 'en-US';
+                    englishUtterance.rate = 1.0;
+                    englishUtterance.pitch = 1.0;
+                    englishUtterance.volume = 0.8;
+                    
+                    englishUtterance.onend = function() {
+                        // 延迟300ms后朗读中文释义
+                        setTimeout(() => {
+                            if (!gamePaused && gameRunning && speechEnabled) {
+                                try {
+                                    const chineseUtterance = new SpeechSynthesisUtterance(wordData.chinese);
+                                    chineseUtterance.lang = 'zh-CN';
+                                    chineseUtterance.rate = 1.0;
+                                    chineseUtterance.pitch = 1.0;
+                                    chineseUtterance.volume = 0.8;
+                                    
+                                    chineseUtterance.onend = function() {
+                                        // 延迟500ms后朗读英文例句
+                                        setTimeout(() => {
+                                            if (!gamePaused && gameRunning && speechEnabled && wordData.example) {
+                                                try {
+                                                    const englishExample = extractEnglish(wordData.example);
+                                                    if (englishExample) {
+                                                        const exampleUtterance = new SpeechSynthesisUtterance(englishExample);
+                                                        exampleUtterance.lang = 'en-US';
+                                                        exampleUtterance.rate = 1.1;
+                                                        exampleUtterance.pitch = 1.0;
+                                                        exampleUtterance.volume = 0.7;
+                                                        
+                                                        exampleUtterance.onend = function() {
+                                                            // 延迟后朗读中文例句
+                                                            const chineseExample = extractChinese(wordData.example);
+                                                            if (chineseExample) {
+                                                                setTimeout(() => {
+                                                                    if (!gamePaused && gameRunning && speechEnabled) {
+                                                                        try {
+                                                                            const chineseExampleUtterance = new SpeechSynthesisUtterance(chineseExample);
+                                                                            chineseExampleUtterance.lang = 'zh-CN';
+                                                                            chineseExampleUtterance.rate = 1.0;
+                                                                            chineseExampleUtterance.pitch = 1.0;
+                                                                            chineseExampleUtterance.volume = 0.7;
+                                                                            
+                                                                            chineseExampleUtterance.onend = function() {
+                                                                                console.log('✅ 完整单词朗读结束');
+                                                                            };
+                                                                            
+                                                                            speechSynthesis.speak(chineseExampleUtterance);
+                                                                        } catch (e) {
+                                                                            console.error('❌ 中文例句朗读错误:', e);
+                                                                        }
+                                                                    }
+                                                                }, englishExample.length * 50);
+                                                            }
+                                                        };
+                                                        
+                                                        speechSynthesis.speak(exampleUtterance);
+                                                    }
+                                                } catch (e) {
+                                                    console.error('❌ 英文例句朗读错误:', e);
+                                                }
+                                            }
+                                        }, 800);
+                                    };
+                                    
+                                    speechSynthesis.speak(chineseUtterance);
+                                } catch (e) {
+                                    console.error('❌ 中文朗读错误:', e);
+                                }
+                            }
+                        }, 300);
+                    };
+                    
+                    // 开始朗读
+                    speechSynthesis.speak(englishUtterance);
+                    
+                } catch (error) {
+                    console.error('❌ playWordReading 错误:', error);
+                }
+            } else {
+                console.warn('⚠️ 浏览器不支持语音合成');
+            }
+        }
+        
+        // 提取英文部分
+        function extractEnglish(text) {
+            if (!text) return '';
+            const match = text.match(/^[^。！？.!?]*[.!?]/);
+            return match ? match[0].trim() : '';
+        }
+        
+        // 提取中文部分
+        function extractChinese(text) {
+            if (!text) return '';
+            const match = text.match(/[。！？.!?]\s*(.+)$/);
+            return match ? match[1].trim() : '';
+        }
+        
+        // 停止所有音频
+        function stopAllAudio() {
+            // 停止语音合成
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+            }
+            
+            // 停止背景音乐
+            stopBackgroundMusic();
+        }
+        
+        // 测试语音功能
+        function testSpeech() {
+            console.log('🧪 测试语音功能');
+            
+            if ('speechSynthesis' in window) {
+                // 测试语音功能
+                const testWord = {
+                    word: 'Hello',
+                    chinese: '你好',
+                    example: 'Hello world. 你好世界。'
+                };
+                
+                playWordReading(testWord);
+            } else {
+                alert('您的浏览器不支持语音合成功能');
+            }
+        }
+
+        // ============================================
+        // 游戏对象类定义
+        // ============================================
+        
+        class Player {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 40;
+                this.height = 50;
+                this.speed = 5;
+                this.health = 3;
+                this.weapon = 1; // 武器等级 1-4
+                this.lastShot = 0;
+                this.shotCooldown = 200; // 射击冷却时间（毫秒）
+            }
+            
+            update() {
+                // 限制玩家在屏幕边界内
+                this.x = Math.max(this.width / 2, Math.min(canvasWidth - this.width / 2, this.x));
+                this.y = Math.max(this.height / 2, Math.min(canvasHeight - this.height / 2, this.y));
+            }
+            
+            draw(ctx) {
+                // 绘制飞机主体
+                ctx.fillStyle = '#4CAF50';
+                ctx.beginPath();
+                // 飞机三角形形状
+                ctx.moveTo(this.x, this.y - this.height / 2);
+                ctx.lineTo(this.x - this.width / 2, this.y + this.height / 2);
+                ctx.lineTo(this.x + this.width / 2, this.y + this.height / 2);
+                ctx.closePath();
+                ctx.fill();
+                
+                // 绘制飞机细节
+                ctx.fillStyle = '#2E7D32';
+                ctx.fillRect(this.x - 3, this.y - 10, 6, 20);
+                
+                // 根据武器等级绘制不同的武器显示
+                ctx.fillStyle = this.getWeaponColor();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y - this.height / 2 + 5, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            getWeaponColor() {
+                switch(this.weapon) {
+                    case 1: return '#FFC107'; // 基础武器 - 黄色
+                    case 2: return '#FF9800'; // 双发武器 - 橙色
+                    case 3: return '#F44336'; // 三发武器 - 红色
+                    case 4: return '#9C27B0'; // 激光武器 - 紫色
+                    default: return '#FFC107';
+                }
+            }
+            
+            canShoot() {
+                return Date.now() - this.lastShot > this.shotCooldown;
+            }
+            
+            shoot() {
+                if (!this.canShoot()) return [];
+                
+                this.lastShot = Date.now();
+                const newBullets = [];
+                
+                switch(this.weapon) {
+                    case 1: // 基础武器 - 单发
+                        newBullets.push(new Bullet(this.x, this.y - this.height / 2, 0, -8, 'player'));
+                        break;
+                    case 2: // 双发武器
+                        newBullets.push(new Bullet(this.x - 10, this.y - this.height / 2, 0, -8, 'player'));
+                        newBullets.push(new Bullet(this.x + 10, this.y - this.height / 2, 0, -8, 'player'));
+                        break;
+                    case 3: // 三发武器
+                        newBullets.push(new Bullet(this.x - 15, this.y - this.height / 2, -1, -8, 'player'));
+                        newBullets.push(new Bullet(this.x, this.y - this.height / 2, 0, -8, 'player'));
+                        newBullets.push(new Bullet(this.x + 15, this.y - this.height / 2, 1, -8, 'player'));
+                        break;
+                    case 4: // 激光武器
+                        newBullets.push(new Laser(this.x, this.y - this.height / 2));
+                        break;
+                }
+                
+                return newBullets;
+            }
+        }
+        
+        class Enemy {
+            constructor(x, y, word, isTarget = false) {
+                this.x = x;
+                this.y = y;
+                this.width = 35;
+                this.height = 40;
+                this.word = word;
+                this.isTarget = isTarget;
+                this.speed = 2;
+                this.health = 1;
+                this.movementPattern = Math.floor(Math.random() * 4); // 0-3 不同运动模式
+                this.startTime = Date.now();
+                this.amplitude = 30; // 摆动幅度
+                this.frequency = 0.002; // 摆动频率
+                this.startX = x;
+            }
+            
+            update() {
+                const elapsedTime = Date.now() - this.startTime;
+                
+                // 基础向下移动
+                this.y += this.speed;
+                
+                // 根据移动模式添加横向移动
+                switch(this.movementPattern) {
+                    case 0: // 直线下降
+                        break;
+                    case 1: // Z字形移动
+                        this.x += Math.sin(elapsedTime * 0.005) * 2;
+                        break;
+                    case 2: // 波浪形移动
+                        this.x = this.startX + Math.sin(elapsedTime * this.frequency) * this.amplitude;
+                        break;
+                    case 3: // 螺旋形移动
+                        this.x = this.startX + Math.cos(elapsedTime * this.frequency * 2) * (this.amplitude * 0.7);
+                        this.speed = 1.5; // 螺旋移动稍慢一些
+                        break;
+                }
+                
+                // 限制在屏幕边界内
+                this.x = Math.max(this.width / 2, Math.min(canvasWidth - this.width / 2, this.x));
+            }
+            
+            draw(ctx) {
+                // 绘制敌机
+                ctx.fillStyle = this.isTarget ? '#F44336' : '#666666';
+                ctx.beginPath();
+                // 敌机倒三角形状
+                ctx.moveTo(this.x, this.y + this.height / 2);
+                ctx.lineTo(this.x - this.width / 2, this.y - this.height / 2);
+                ctx.lineTo(this.x + this.width / 2, this.y - this.height / 2);
+                ctx.closePath();
+                ctx.fill();
+                
+                // 绘制单词
+                ctx.fillStyle = 'white';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.word, this.x, this.y + 3);
+                
+                // 目标敌机特殊标记
+                if (this.isTarget) {
+                    ctx.strokeStyle = '#FFC107';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.width / 2 + 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+            
+            isOffScreen() {
+                return this.y > canvasHeight + this.height;
+            }
+        }
+        
+        class Bullet {
+            constructor(x, y, vx, vy, type = 'player') {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.type = type;
+                this.width = 4;
+                this.height = 8;
+                this.damage = 1;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+            
+            draw(ctx) {
+                ctx.fillStyle = this.type === 'player' ? '#4CAF50' : '#F44336';
+                ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+            }
+            
+            isOffScreen() {
+                return this.y < -this.height || this.y > canvasHeight + this.height ||
+                       this.x < -this.width || this.x > canvasWidth + this.width;
+            }
+        }
+        
+        class Laser extends Bullet {
+            constructor(x, y) {
+                super(x, y, 0, -12, 'player');
+                this.width = 6;
+                this.height = canvasHeight; // 激光贯穿整个屏幕
+                this.damage = 5;
+                this.duration = 100; // 激光持续时间
+                this.startTime = Date.now();
+            }
+            
+            update() {
+                // 激光不移动，但有持续时间
+            }
+            
+            draw(ctx) {
+                const alpha = Math.max(0, 1 - (Date.now() - this.startTime) / this.duration);
+                ctx.globalAlpha = alpha;
+                
+                // 绘制激光光束
+                const gradient = ctx.createLinearGradient(this.x - this.width/2, 0, this.x + this.width/2, 0);
+                gradient.addColorStop(0, 'rgba(156, 39, 176, 0)');
+                gradient.addColorStop(0.5, 'rgba(156, 39, 176, 1)');
+                gradient.addColorStop(1, 'rgba(156, 39, 176, 0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(this.x - this.width / 2, 0, this.width, canvasHeight);
+                
+                ctx.globalAlpha = 1;
+            }
+            
+            isOffScreen() {
+                return Date.now() - this.startTime > this.duration;
+            }
+        }
+        
+        class Particle {
+            constructor(x, y, vx, vy, color, life) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.color = color;
+                this.life = life;
+                this.maxLife = life;
+                this.size = Math.random() * 3 + 1;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life--;
+                this.vy += 0.1; // 重力效果
+            }
+            
+            draw(ctx) {
+                const alpha = this.life / this.maxLife;
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * alpha, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+            
+            isDead() {
+                return this.life <= 0;
+            }
+        }
+
+        // ============================================
+        // 游戏逻辑函数
+        // ============================================
+        
+        function initGame() {
+            console.log('🎮 初始化游戏逻辑...');
+            
+            // 重置游戏状态
+            score = 0;
+            lives = 3;
+            enemiesHitCount = 0;
+            correctWordsCount = 0;
+            wordsLearnedCount = 0;
+            combo = 0;
+            maxCombo = 0;
+            weaponLevel = 1;
+            
+            // 清空游戏对象数组
+            enemies = [];
+            bullets = [];
+            particles = [];
+            
+            // 创建玩家
+            player = new Player(canvasWidth / 2, canvasHeight - 100);
+            
+            // 选择第一个目标单词
+            selectNewTargetWord();
+            
+            // 更新UI显示
+            updateUI();
+        }
+        
+        function selectNewTargetWord() {
+            const currentWords = words[selectedGrade];
+            if (!currentWords || currentWords.length === 0) return;
+            
+            // 随机选择一个单词作为目标
+            const randomIndex = Math.floor(Math.random() * currentWords.length);
+            currentWordData = currentWords[randomIndex];
+            targetWord = currentWordData.word;
+            
+            // 更新UI显示
+            document.getElementById('targetWord').textContent = `目标: ${targetWord}`;
+            document.getElementById('targetChinese').textContent = currentWordData.chinese;
+            
+            console.log('🎯 新目标单词:', targetWord, currentWordData.chinese);
+        }
+        
+        function spawnEnemies() {
+            if (enemies.length >= 6) return; // 限制同屏敌机数量
+            
+            const currentWords = words[selectedGrade];
+            if (!currentWords || currentWords.length === 0) return;
+            
+            // 生成3个敌机
+            const positions = [
+                canvasWidth * 0.2,
+                canvasWidth * 0.5, 
+                canvasWidth * 0.8
+            ];
+            
+            // 随机选择一个位置放置目标敌机
+            const targetPosition = Math.floor(Math.random() * 3);
+            
+            for (let i = 0; i < 3; i++) {
+                let enemyWord;
+                let isTarget = false;
+                
+                if (i === targetPosition) {
+                    // 目标敌机
+                    enemyWord = targetWord;
+                    isTarget = true;
+                } else {
+                    // 干扰敌机，选择不同的单词
+                    do {
+                        const randomIndex = Math.floor(Math.random() * currentWords.length);
+                        enemyWord = currentWords[randomIndex].word;
+                    } while (enemyWord === targetWord);
+                }
+                
+                const enemy = new Enemy(positions[i], -50, enemyWord, isTarget);
+                enemies.push(enemy);
+            }
+        }
+        
+        function updateGame(currentTime) {
+            if (!gameRunning || gamePaused) return;
+            
+            deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+            
+            // 更新玩家
+            if (player) {
+                player.update();
+            }
+            
+            // 更新敌机
+            enemies.forEach(enemy => enemy.update());
+            
+            // 移除离开屏幕的敌机
+            enemies = enemies.filter(enemy => {
+                if (enemy.isOffScreen()) {
+                    if (enemy.isTarget) {
+                        // 目标敌机逃脱，减少生命值
+                        lives--;
+                        combo = 0; // 重置连击
+                        createExplosionParticles(enemy.x, canvasHeight, '#F44336');
+                        
+                        if (lives <= 0) {
+                            gameOver();
+                            return false;
+                        } else {
+                            selectNewTargetWord();
+                        }
+                    }
+                    return false;
+                }
+                return true;
+            });
+            
+            // 更新子弹
+            bullets.forEach(bullet => bullet.update());
+            bullets = bullets.filter(bullet => !bullet.isOffScreen());
+            
+            // 更新粒子效果
+            particles.forEach(particle => particle.update());
+            particles = particles.filter(particle => !particle.isDead());
+            
+            // 碰撞检测
+            checkCollisions();
+            
+            // 定期生成敌机
+            if (Math.random() < 0.02) { // 2% 概率每帧
+                spawnEnemies();
+            }
+            
+            // 更新UI
+            updateUI();
+        }
+        
+        function checkCollisions() {
+            // 子弹与敌机碰撞
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                if (bullet.type !== 'player') continue;
+                
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    const enemy = enemies[j];
+                    
+                    if (isColliding(bullet, enemy)) {
+                        // 击中敌机
+                        enemiesHitCount++;
+                        
+                        if (enemy.isTarget) {
+                            // 击中目标敌机
+                            correctWordsCount++;
+                            combo++;
+                            maxCombo = Math.max(maxCombo, combo);
+                            
+                            // 计算得分（包含连击奖励）
+                            const baseScore = 50;
+                            const comboBonus = Math.floor(combo * 0.1 * baseScore);
+                            score += baseScore + comboBonus;
+                            
+                            // 播放单词语音
+                            playWordReading(currentWordData);
+                            
+                            // 武器升级检查
+                            if (correctWordsCount > 0 && correctWordsCount % 5 === 0) {
+                                upgradeWeapon();
+                            }
+                            
+                            // 选择新目标单词
+                            selectNewTargetWord();
+                            
+                            // 创建成功粒子效果
+                            createExplosionParticles(enemy.x, enemy.y, '#4CAF50');
+                            
+                        } else {
+                            // 击中干扰敌机
+                            score += 10;
+                            combo = Math.max(0, combo - 1); // 减少连击数但不低于0
+                            createExplosionParticles(enemy.x, enemy.y, '#FF9800');
+                        }
+                        
+                        // 移除子弹和敌机
+                        bullets.splice(i, 1);
+                        enemies.splice(j, 1);
+                        break;
+                    }
+                }
+            }
+            
+            // 敌机与玩家碰撞
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const enemy = enemies[i];
+                if (isColliding(player, enemy)) {
+                    lives--;
+                    combo = 0;
+                    createExplosionParticles(player.x, player.y, '#F44336');
+                    enemies.splice(i, 1);
+                    
+                    if (lives <= 0) {
+                        gameOver();
+                        return;
+                    }
+                }
+            }
+        }
+        
+        function isColliding(obj1, obj2) {
+            return obj1.x < obj2.x + obj2.width / 2 &&
+                   obj1.x + obj1.width / 2 > obj2.x &&
+                   obj1.y < obj2.y + obj2.height / 2 &&
+                   obj1.y + obj1.height / 2 > obj2.y;
+        }
+        
+        function upgradeWeapon() {
+            if (weaponLevel < 4) {
+                weaponLevel++;
+                player.weapon = weaponLevel;
+                
+                // 显示升级提示
+                showNotification(`武器升级！等级 ${weaponLevel}`);
+                
+                console.log('⬆️ 武器升级到等级:', weaponLevel);
+            }
+        }
+        
+        function createExplosionParticles(x, y, color) {
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI * 2 * i) / 8;
+                const speed = Math.random() * 3 + 2;
+                const vx = Math.cos(angle) * speed;
+                const vy = Math.sin(angle) * speed;
+                const life = Math.floor(Math.random() * 20) + 20;
+                
+                particles.push(new Particle(x, y, vx, vy, color, life));
+            }
+        }
+        
+        function showNotification(text) {
+            // 简单的通知显示（可以后续改进为更好的UI）
+            console.log('📢 通知:', text);
+        }
+        
+        function updateUI() {
+            document.getElementById('scoreDisplay').textContent = score;
+            document.getElementById('livesDisplay').textContent = lives;
+            
+            const weaponNames = ['', '基础', '双发', '三发', '激光'];
+            document.getElementById('weaponDisplay').textContent = weaponNames[weaponLevel] || '基础';
+        }
+        
+        function drawGame() {
+            if (!ctx || !gameRunning) return;
+            
+            // 清除画布
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            
+            // 绘制游戏对象
+            if (player) {
+                player.draw(ctx);
+            }
+            
+            enemies.forEach(enemy => enemy.draw(ctx));
+            bullets.forEach(bullet => bullet.draw(ctx));
+            particles.forEach(particle => particle.draw(ctx));
+            
+            // 绘制连击显示
+            if (combo > 1) {
+                ctx.fillStyle = '#FFC107';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${combo} 连击!`, canvasWidth / 2, 50);
+            }
+        }
+        
+        function gameLoop(currentTime) {
+            updateGame(currentTime);
+            drawGame();
+            
+            if (gameRunning) {
+                gameLoopId = requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        function startGame() {
+            console.log('🚀 开始游戏');
+            
+            currentScreen = 'game';
+            gameRunning = true;
+            gamePaused = false;
+            
+            // 切换到游戏界面
+            switchScreen('gameScreen');
+            
+            // 初始化游戏
+            initGame();
+            
+            // 启动游戏循环
+            lastTime = performance.now();
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+        
+        function pauseGame() {
+            gamePaused = !gamePaused;
+            console.log(gamePaused ? '⏸️ 游戏暂停' : '▶️ 游戏继续');
+            
+            if (!gamePaused && gameRunning) {
+                lastTime = performance.now();
+                gameLoopId = requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        function gameOver() {
+            console.log('💀 游戏结束');
+            
+            gameRunning = false;
+            gamePaused = false;
+            
+            if (gameLoopId) {
+                cancelAnimationFrame(gameLoopId);
+                gameLoopId = null;
+            }
+            
+            // 停止所有音频
+            stopAllAudio();
+            
+            // 更新结束界面数据
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('enemiesHit').textContent = enemiesHitCount;
+            document.getElementById('correctWords').textContent = correctWordsCount;
+            document.getElementById('wordsLearned').textContent = correctWordsCount; // 简化为击中的正确单词数
+            document.getElementById('maxCombo').textContent = maxCombo;
+            
+            // 切换到游戏结束界面
+            switchScreen('gameOverScreen');
+            currentScreen = 'gameOver';
+        }
+        
+        function backToMenu() {
+            console.log('🏠 返回主菜单');
+            
+            gameRunning = false;
+            gamePaused = false;
+            
+            if (gameLoopId) {
+                cancelAnimationFrame(gameLoopId);
+                gameLoopId = null;
+            }
+            
+            // 停止所有音频
+            stopAllAudio();
+            
+            // 切换到开始界面
+            switchScreen('startScreen');
+            currentScreen = 'start';
+        }
+
+        // ============================================
+        // 星空背景系统
+        // ============================================
+        
+        let stars = [];
+        
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 100; i++) {
+                stars.push({
+                    x: Math.random() * canvasWidth,
+                    y: Math.random() * canvasHeight,
+                    size: Math.random() * 2 + 0.5,
+                    speed: Math.random() * 2 + 0.5,
+                    alpha: Math.random() * 0.8 + 0.2
+                });
+            }
+            
+            animateStars();
+        }
+        
+        function animateStars() {
+            if (!starsCtx) return;
+            
+            starsCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+            
+            stars.forEach(star => {
+                star.y += star.speed;
+                
+                // 重置超出屏幕的星星
+                if (star.y > canvasHeight) {
+                    star.y = -10;
+                    star.x = Math.random() * canvasWidth;
+                }
+                
+                // 绘制星星
+                starsCtx.globalAlpha = star.alpha;
+                starsCtx.fillStyle = 'white';
+                starsCtx.beginPath();
+                starsCtx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                starsCtx.fill();
+            });
+            
+            starsCtx.globalAlpha = 1;
+            requestAnimationFrame(animateStars);
+        }
+        
+        // ============================================
+        // 音频系统 (复用snackwordsgame的背景音乐实现)
+        // ============================================
+        
+        let audioContext;
+        let backgroundMusicGain;
+        let backgroundMusicSource;
+        
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                backgroundMusicGain = audioContext.createGain();
+                backgroundMusicGain.connect(audioContext.destination);
+                backgroundMusicGain.gain.value = 0.3;
+                
+                console.log('🔊 音频系统初始化成功');
+            } catch (error) {
+                console.warn('⚠️ 音频系统初始化失败:', error);
+            }
+        }
+        
+        function createBackgroundMusic() {
+            if (!audioContext) return;
+            
+            try {
+                // 创建简单的背景音乐（8bit风格）
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(262, audioContext.currentTime); // C4
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(backgroundMusicGain);
+                
+                oscillator.start();
+                backgroundMusicSource = oscillator;
+                
+                // 简单的旋律变化
+                setTimeout(() => {
+                    if (backgroundMusicSource && audioEnabled) {
+                        oscillator.frequency.setValueAtTime(330, audioContext.currentTime); // E4
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                console.warn('⚠️ 背景音乐创建失败:', error);
+            }
+        }
+        
+        function playBackgroundMusic() {
+            if (!audioEnabled || !audioContext) return;
+            
+            // 简单实现，实际可以更复杂
+            createBackgroundMusic();
+        }
+        
+        function stopBackgroundMusic() {
+            if (backgroundMusicSource) {
+                try {
+                    backgroundMusicSource.stop();
+                    backgroundMusicSource = null;
+                } catch (error) {
+                    console.warn('⚠️ 停止背景音乐失败:', error);
+                }
+            }
+        }
+        
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            if (audioEnabled) {
+                playBackgroundMusic();
+            } else {
+                stopBackgroundMusic();
+            }
+        }
+        
+        // ============================================
+        // 界面切换系统
+        // ============================================
+        
+        function switchScreen(targetScreenId) {
+            // 隐藏所有界面
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // 显示目标界面
+            const targetScreen = document.getElementById(targetScreenId);
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+                console.log('🔄 切换到界面:', targetScreenId);
+            }
+        }
+
+        // ============================================
+        // 事件监听器
+        // ============================================
+        
+        function bindEventListeners() {
+            // 开始游戏按钮
+            document.getElementById('startGameBtn').addEventListener('click', function() {
+                selectedGrade = parseInt(document.getElementById('gradeSelect').value);
+                console.log('📚 选择年级:', selectedGrade);
+                
+                // 初始化语音合成
+                if ('speechSynthesis' in window) {
+                    const testUtterance = new SpeechSynthesisUtterance('Game Start');
+                    testUtterance.lang = 'en-US';
+                    testUtterance.volume = 0.01;
+                    testUtterance.onend = () => {
+                        console.log('🔊 语音合成初始化完成');
+                    };
+                    speechSynthesis.speak(testUtterance);
+                }
+                
+                startGame();
+            });
+            
+            // 游戏说明按钮
+            document.getElementById('instructionsBtn').addEventListener('click', function() {
+                alert('🎮 游戏说明:\n\n1. 使用方向键或触摸控制飞机移动\n2. 按空格键或射击按钮发射子弹\n3. 射击标有目标单词的红色敌机\n4. 避免射击灰色干扰敌机\n5. 连续击中目标可获得连击奖励\n6. 每击中5个目标单词即可升级武器\n7. 生命值为0时游戏结束');
+            });
+            
+            // 测试语音按钮
+            document.getElementById('testSpeechBtn').addEventListener('click', testSpeech);
+            
+            // 暂停按钮
+            document.getElementById('pauseBtn').addEventListener('click', pauseGame);
+            
+            // 再玩一次按钮
+            document.getElementById('playAgainBtn').addEventListener('click', startGame);
+            
+            // 返回主菜单按钮
+            document.getElementById('backToMenuBtn').addEventListener('click', backToMenu);
+            
+            // 键盘控制
+            document.addEventListener('keydown', function(event) {
+                keys[event.key] = true;
+                
+                if (currentScreen === 'game' && gameRunning && !gamePaused) {
+                    handleKeyboard(event);
+                }
+                
+                // 阻止空格键滚动页面
+                if (event.key === ' ') {
+                    event.preventDefault();
+                }
+            });
+            
+            document.addEventListener('keyup', function(event) {
+                keys[event.key] = false;
+            });
+            
+            // 触摸控制（移动端）
+            bindTouchControls();
+            
+            // 窗口大小改变事件
+            window.addEventListener('resize', resizeCanvas);
+        }
+        
+        function handleKeyboard(event) {
+            if (!player) return;
+            
+            switch(event.key) {
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    player.x -= player.speed;
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    player.x += player.speed;
+                    break;
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    player.y -= player.speed;
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    player.y += player.speed;
+                    break;
+                case ' ':
+                case 'Enter':
+                    // 射击
+                    const newBullets = player.shoot();
+                    bullets.push(...newBullets);
+                    event.preventDefault();
+                    break;
+                case 'p':
+                case 'P':
+                    pauseGame();
+                    break;
+            }
+        }
+        
+        function bindTouchControls() {
+            // 虚拟摇杆控制
+            const joystickArea = document.getElementById('joystickArea');
+            const joystickKnob = document.getElementById('joystickKnob');
+            
+            let joystickTouching = false;
+            let joystickStartPos = { x: 0, y: 0 };
+            
+            joystickArea.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                joystickTouching = true;
+                const rect = joystickArea.getBoundingClientRect();
+                joystickStartPos = {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2
+                };
+                joystickActive = true;
+            });
+            
+            document.addEventListener('touchmove', function(e) {
+                if (!joystickTouching || !player) return;
+                
+                e.preventDefault();
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - joystickStartPos.x;
+                const deltaY = touch.clientY - joystickStartPos.y;
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const maxDistance = 40;
+                
+                if (distance > 0) {
+                    const normalizedX = deltaX / distance;
+                    const normalizedY = deltaY / distance;
+                    const clampedDistance = Math.min(distance, maxDistance);
+                    
+                    // 更新摇杆旋钮位置
+                    joystickPosition.x = normalizedX * clampedDistance;
+                    joystickPosition.y = normalizedY * clampedDistance;
+                    
+                    joystickKnob.style.transform = `translate(${joystickPosition.x}px, ${joystickPosition.y}px)`;
+                    
+                    // 移动玩家
+                    player.x += normalizedX * player.speed;
+                    player.y += normalizedY * player.speed;
+                }
+            });
+            
+            document.addEventListener('touchend', function(e) {
+                if (joystickTouching) {
+                    joystickTouching = false;
+                    joystickActive = false;
+                    joystickPosition = { x: 0, y: 0 };
+                    joystickKnob.style.transform = 'translate(0px, 0px)';
+                }
+            });
+            
+            // 射击按钮
+            const shootBtn = document.getElementById('shootBtn');
+            shootBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                if (player && currentScreen === 'game' && gameRunning && !gamePaused) {
+                    const newBullets = player.shoot();
+                    bullets.push(...newBullets);
+                }
+            });
+            
+            // 防止触摸时的默认行为
+            document.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+        }
+
+        // ============================================
+        // 页面加载完成后初始化
+        // ============================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM 加载完成');
+            init();
+        });
+    </script>
+</body>
+</html>

@@ -239,6 +239,10 @@
             z-index: 3;
             pointer-events: none;
         }
+        
+        .game-ui button {
+            pointer-events: auto;
+        }
 
         /* 顶部信息栏 */
         .game-header {
@@ -285,18 +289,23 @@
         /* 移动端虚拟控制器 */
         .mobile-controls {
             position: absolute;
-            bottom: 0;
+            bottom: 40px;
             left: 0;
             right: 0;
             height: 180px;
             z-index: 5;
             pointer-events: none;
         }
+        
+        .mobile-controls button,
+        .mobile-controls .joystick-area {
+            pointer-events: auto;
+        }
 
         /* 左侧摇杆 */
         .joystick-area {
             position: absolute;
-            bottom: var(--spacing-xl);
+            bottom: calc(var(--spacing-xl) + 40px);
             left: var(--spacing-xl);
             width: 100px;
             height: 100px;
@@ -328,11 +337,8 @@
 
         /* 右侧射击按钮 */
         .shoot-button {
-            position: absolute;
-            bottom: var(--spacing-xl);
-            right: var(--spacing-xl);
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             background: rgba(255, 99, 71, 0.8);
             border: 3px solid rgba(255, 99, 71, 1);
             border-radius: 50%;
@@ -351,6 +357,38 @@
         .shoot-button:active {
             transform: scale(0.95);
             background: rgba(255, 99, 71, 1);
+        }
+        
+        .right-controls {
+            position: absolute;
+            right: calc(var(--spacing-xl) + 40px);
+            bottom: calc(var(--spacing-xl) + 40px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .mobile-pause-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            font-size: 24px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: white;
+            pointer-events: auto;
+        }
+        
+        .mobile-pause-button:active {
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0.95);
         }
 
         /* 暂停和设置按钮 */
@@ -379,6 +417,59 @@
 
         .settings-button {
             right: 70px;
+        }
+
+        /* 血槽系统 */
+        .health-bar {
+            position: absolute;
+            right: var(--spacing-sm);
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 200px;
+            z-index: 4;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .health-segment {
+            flex: 1;
+            background: rgba(76, 175, 80, 0.8);
+            border: 1px solid rgba(76, 175, 80, 1);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .health-segment.damaged {
+            background: rgba(244, 67, 54, 0.3);
+            border-color: rgba(244, 67, 54, 0.5);
+        }
+
+        /* 返回按钮 */
+        .back-button {
+            position: absolute;
+            top: var(--spacing-lg);
+            left: var(--spacing-lg);
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            color: var(--text-light);
+            font-size: 1.2rem;
+            cursor: pointer;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 4;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
         }
 
         .pause-button:hover, .settings-button:hover {
@@ -505,6 +596,15 @@
                 </select>
             </div>
 
+            <div class="grade-selector">
+                <label for="difficultySelect">游戏难度:</label>
+                <select id="difficultySelect" class="grade-select">
+                    <option value="easy">低 (慢速移动)</option>
+                    <option value="medium" selected>中 (中速移动)</option>
+                    <option value="hard">高 (快速移动)</option>
+                </select>
+            </div>
+
             <button id="startGameBtn" class="button">
                 <span class="loading" id="startLoading" style="display: none;"></span>
                 开始游戏 🎮
@@ -514,8 +614,8 @@
                 游戏说明 📖
             </button>
             
-            <button id="testSpeechBtn" class="button button-secondary">
-                测试语音 🔊
+            <button id="vocabularyBtn" class="button button-secondary">
+                单词本 📖
             </button>
         </div>
 
@@ -542,9 +642,11 @@
                     </div>
                 </div>
 
-                <!-- 暂停和设置按钮 -->
-                <button id="pauseBtn" class="pause-button">⏸️</button>
-                <button id="settingsBtn" class="settings-button">⚙️</button>
+                <!-- 返回按钮 -->
+                <button id="backBtn" class="back-button">←</button>
+                
+                <!-- 血槽显示 -->
+                <div class="health-bar" id="healthBar"></div>
             </div>
 
             <!-- 移动端虚拟控制器 -->
@@ -556,8 +658,11 @@
                     </div>
                 </div>
 
-                <!-- 右侧射击按钮 -->
-                <button class="shoot-button touch-target" id="shootBtn">🔥</button>
+                <!-- 右侧按钮组 -->
+                <div class="right-controls">
+                    <button class="mobile-pause-button touch-target" id="mobilePauseBtn">⏸️</button>
+                    <button class="shoot-button touch-target" id="shootBtn">🔥</button>
+                </div>
             </div>
         </div>
 
@@ -592,6 +697,10 @@
                 再玩一次 🔄
             </button>
             
+            <button id="viewWordsBtn" class="button button-secondary">
+                已学习单词 📖
+            </button>
+            
             <button id="backToMenuBtn" class="button button-secondary">
                 返回主菜单 🏠
             </button>
@@ -608,6 +717,7 @@
         let gamePaused = false;
         let currentScreen = 'start';
         let selectedGrade = 3;
+        let selectedDifficulty = 'medium';
         
         // 游戏对象
         let player = null;
@@ -616,10 +726,12 @@
         let particles = [];
         let targetWord = null;
         let currentWordData = null;
+        let learnedWords = []; // 已学习的单词列表
         
         // 游戏统计
         let score = 0;
-        let lives = 3;
+        let health = 10; // 血槽，初始10格
+        let maxHealth = 10;
         let enemiesHitCount = 0;
         let correctWordsCount = 0;
         let wordsLearnedCount = 0;
@@ -874,6 +986,17 @@
             // 初始化音频系统
             initAudio();
             
+            // 设置默认显示开始屏幕
+            switchScreen('startScreen');
+            currentScreen = 'start';
+            
+            // 延迟播放背景音乐（等待用户交互）
+            setTimeout(() => {
+                if (currentScreen === 'start') {
+                    playBackgroundMusic();
+                }
+            }, 1000);
+            
             console.log('✅ 游戏初始化完成');
         }
         
@@ -953,7 +1076,11 @@
                                             if (!gamePaused && gameRunning && speechEnabled && wordData.example) {
                                                 try {
                                                     const englishExample = extractEnglish(wordData.example);
-                                                    if (englishExample) {
+                                                    const chineseExample = extractChinese(wordData.example);
+                                                    if (englishExample && chineseExample) {
+                                                        // 显示例句弹窗
+                                                        showExampleDialog(englishExample, chineseExample);
+                                                        
                                                         const exampleUtterance = new SpeechSynthesisUtterance(englishExample);
                                                         exampleUtterance.lang = 'en-US';
                                                         exampleUtterance.rate = 1.1;
@@ -1039,23 +1166,6 @@
             stopBackgroundMusic();
         }
         
-        // 测试语音功能
-        function testSpeech() {
-            console.log('🧪 测试语音功能');
-            
-            if ('speechSynthesis' in window) {
-                // 测试语音功能
-                const testWord = {
-                    word: 'Hello',
-                    chinese: '你好',
-                    example: 'Hello world. 你好世界。'
-                };
-                
-                playWordReading(testWord);
-            } else {
-                alert('您的浏览器不支持语音合成功能');
-            }
-        }
 
         // ============================================
         // 游戏对象类定义
@@ -1152,7 +1262,7 @@
                 this.height = 40;
                 this.word = word;
                 this.isTarget = isTarget;
-                this.speed = 2;
+                this.speed = this.getDifficultySpeed();
                 this.health = 1;
                 this.movementPattern = Math.floor(Math.random() * 4); // 0-3 不同运动模式
                 this.startTime = Date.now();
@@ -1211,6 +1321,15 @@
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.width / 2 + 5, 0, Math.PI * 2);
                     ctx.stroke();
+                }
+            }
+            
+            getDifficultySpeed() {
+                switch(selectedDifficulty) {
+                    case 'easy': return 1.5;
+                    case 'medium': return 2;
+                    case 'hard': return 3;
+                    default: return 2;
                 }
             }
             
@@ -1325,27 +1444,36 @@
             
             // 重置游戏状态
             score = 0;
-            lives = 3;
+            health = 10;
+            maxHealth = 10;
             enemiesHitCount = 0;
             correctWordsCount = 0;
             wordsLearnedCount = 0;
             combo = 0;
             maxCombo = 0;
             weaponLevel = 1;
+            learnedWords = [];
             
             // 清空游戏对象数组
             enemies = [];
             bullets = [];
             particles = [];
             
-            // 创建玩家
-            player = new Player(canvasWidth / 2, canvasHeight - 100);
+            // 创建玩家 (位置上移40px)
+            player = new Player(canvasWidth / 2, canvasHeight - 140);
             
             // 选择第一个目标单词
             selectNewTargetWord();
             
             // 更新UI显示
             updateUI();
+            
+            // 初始化血槽
+            initHealthBar();
+            updateHealthBar();
+            
+            // 播放背景音乐
+            playBackgroundMusic();
         }
         
         function selectNewTargetWord() {
@@ -1362,6 +1490,13 @@
             document.getElementById('targetChinese').textContent = currentWordData.chinese;
             
             console.log('🎯 新目标单词:', targetWord, currentWordData.chinese);
+            
+            // 播放单词语音朗读
+            if (speechEnabled && currentWordData) {
+                setTimeout(() => {
+                    playWordReading(currentWordData);
+                }, 500); // 延迟500ms后播放，避免与游戏音效冲突
+            }
         }
         
         function spawnEnemies() {
@@ -1419,12 +1554,13 @@
             enemies = enemies.filter(enemy => {
                 if (enemy.isOffScreen()) {
                     if (enemy.isTarget) {
-                        // 目标敌机逃脱，减少生命值
-                        lives--;
+                        // 目标敌机逃脱，减少血槽
+                        health--;
                         combo = 0; // 重置连击
                         createExplosionParticles(enemy.x, canvasHeight, '#F44336');
+                        updateHealthBar();
                         
-                        if (lives <= 0) {
+                        if (health <= 0) {
                             gameOver();
                             return false;
                         } else {
@@ -1488,6 +1624,19 @@
                                 upgradeWeapon();
                             }
                             
+                            // 血槽恢复检查 (每击中5个目标单词加1格血)
+                            if (correctWordsCount > 0 && correctWordsCount % 5 === 0 && health < maxHealth) {
+                                health++;
+                                updateHealthBar();
+                                showNotification('血槽恢复！');
+                            }
+                            
+                            // 记录已学习单词
+                            if (!learnedWords.find(w => w.word === currentWordData.word)) {
+                                learnedWords.push(currentWordData);
+                                wordsLearnedCount++;
+                            }
+                            
                             // 选择新目标单词
                             selectNewTargetWord();
                             
@@ -1513,12 +1662,13 @@
             for (let i = enemies.length - 1; i >= 0; i--) {
                 const enemy = enemies[i];
                 if (isColliding(player, enemy)) {
-                    lives--;
+                    health--;
                     combo = 0;
                     createExplosionParticles(player.x, player.y, '#F44336');
                     enemies.splice(i, 1);
+                    updateHealthBar();
                     
-                    if (lives <= 0) {
+                    if (health <= 0) {
                         gameOver();
                         return;
                     }
@@ -1564,10 +1714,35 @@
         
         function updateUI() {
             document.getElementById('scoreDisplay').textContent = score;
-            document.getElementById('livesDisplay').textContent = lives;
+            document.getElementById('livesDisplay').textContent = `${health}/${maxHealth}`;
             
             const weaponNames = ['', '基础', '双发', '三发', '激光'];
             document.getElementById('weaponDisplay').textContent = weaponNames[weaponLevel] || '基础';
+        }
+        
+        function initHealthBar() {
+            const healthBar = document.getElementById('healthBar');
+            healthBar.innerHTML = '';
+            
+            for (let i = 0; i < maxHealth; i++) {
+                const segment = document.createElement('div');
+                segment.className = 'health-segment';
+                segment.id = `health-${i}`;
+                healthBar.appendChild(segment);
+            }
+        }
+        
+        function updateHealthBar() {
+            for (let i = 0; i < maxHealth; i++) {
+                const segment = document.getElementById(`health-${i}`);
+                if (segment) {
+                    if (i < health) {
+                        segment.classList.remove('damaged');
+                    } else {
+                        segment.classList.add('damaged');
+                    }
+                }
+            }
         }
         
         function drawGame() {
@@ -1625,9 +1800,22 @@
             gamePaused = !gamePaused;
             console.log(gamePaused ? '⏸️ 游戏暂停' : '▶️ 游戏继续');
             
-            if (!gamePaused && gameRunning) {
+            if (gamePaused) {
+                // 暂停背景音乐
+                if (backgroundMusic && !backgroundMusic.paused) {
+                    backgroundMusic.pause();
+                    console.log('🎵 背景音乐暂停');
+                }
+            } else if (gameRunning) {
+                // 恢复游戏循环
                 lastTime = performance.now();
                 gameLoopId = requestAnimationFrame(gameLoop);
+                
+                // 恢复背景音乐
+                if (backgroundMusic && backgroundMusic.paused) {
+                    backgroundMusic.play().catch(e => console.log('背景音乐播放失败:', e));
+                    console.log('🎵 背景音乐恢复');
+                }
             }
         }
         
@@ -1674,6 +1862,56 @@
             // 切换到开始界面
             switchScreen('startScreen');
             currentScreen = 'start';
+        }
+        
+        function showVocabulary() {
+            console.log('📚 显示词汇本');
+            const currentWords = words[selectedGrade] || words[1];
+            let vocabularyText = `📚 ${selectedGrade}年级单词本:\n\n`;
+            
+            currentWords.forEach((wordObj, index) => {
+                vocabularyText += `${index + 1}. ${wordObj.word} - ${wordObj.chinese}\n`;
+            });
+            
+            alert(vocabularyText);
+        }
+        
+        function showLearnedWords() {
+            console.log('📖 显示已学单词');
+            if (learnedWords.length === 0) {
+                alert('📝 还没有学习任何单词，快去游戏中学习吧！');
+                return;
+            }
+            
+            let learnedText = `📖 已学习的单词 (${learnedWords.length}个):\n\n`;
+            learnedWords.forEach((wordObj, index) => {
+                learnedText += `${index + 1}. ${wordObj.word} - ${wordObj.chinese}\n`;
+            });
+            
+            alert(learnedText);
+        }
+        
+        function showExampleDialog(englishExample, chineseExample) {
+            // 创建简洁透明的例句弹窗
+            const dialog = document.createElement('div');
+            dialog.className = 'example-dialog';
+            dialog.style.cssText = 'position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.4);color:white;padding:12px 16px;border-radius:8px;z-index:10001;max-width:300px;font-size:14px;line-height:1.4;text-align:center;pointer-events:none';
+            
+            dialog.innerHTML = `
+                <div style="font-size: 16px; margin-bottom: 6px;">${englishExample}</div>
+                <div style="font-size: 14px; color: #FFD700;">${chineseExample}</div>
+            `;
+            
+            document.body.appendChild(dialog);
+            
+            // 3秒后自动关闭
+            setTimeout(() => {
+                if (dialog && dialog.parentElement) {
+                    dialog.remove();
+                }
+            }, 3000);
+            
+            console.log('📚 显示例句弹窗:', englishExample, '/', chineseExample);
         }
 
         // ============================================
@@ -1730,17 +1968,40 @@
         let audioContext;
         let backgroundMusicGain;
         let backgroundMusicSource;
+        let backgroundMusic;
         
         function initAudio() {
+            try {
+                // 创建HTML5 Audio元素播放背景音乐
+                backgroundMusic = new Audio('background.mp3');
+                backgroundMusic.loop = true;
+                backgroundMusic.volume = 0.3;
+                
+                backgroundMusic.addEventListener('canplay', () => {
+                    console.log('🔊 背景音乐文件加载成功');
+                });
+                
+                backgroundMusic.addEventListener('error', (e) => {
+                    console.warn('⚠️ 背景音乐加载失败，使用合成音频:', e);
+                    // 如果MP3文件加载失败，回退到Web Audio API
+                    initSynthAudio();
+                });
+                
+                console.log('🔊 音频系统初始化成功');
+            } catch (error) {
+                console.warn('⚠️ 音频系统初始化失败:', error);
+            }
+        }
+        
+        function initSynthAudio() {
             try {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 backgroundMusicGain = audioContext.createGain();
                 backgroundMusicGain.connect(audioContext.destination);
                 backgroundMusicGain.gain.value = 0.3;
-                
-                console.log('🔊 音频系统初始化成功');
+                console.log('🔊 合成音频系统初始化成功');
             } catch (error) {
-                console.warn('⚠️ 音频系统初始化失败:', error);
+                console.warn('⚠️ 合成音频系统初始化失败:', error);
             }
         }
         
@@ -1776,19 +2037,40 @@
         }
         
         function playBackgroundMusic() {
-            if (!audioEnabled || !audioContext) return;
+            if (!audioEnabled) return;
             
-            // 简单实现，实际可以更复杂
-            createBackgroundMusic();
+            if (backgroundMusic) {
+                try {
+                    backgroundMusic.currentTime = 0;
+                    backgroundMusic.play();
+                    console.log('🎵 开始播放背景音乐');
+                } catch (error) {
+                    console.warn('⚠️ 播放背景音乐失败:', error);
+                    // 回退到合成音频
+                    createBackgroundMusic();
+                }
+            } else if (audioContext) {
+                // 使用合成音频作为备选
+                createBackgroundMusic();
+            }
         }
         
         function stopBackgroundMusic() {
+            if (backgroundMusic) {
+                try {
+                    backgroundMusic.pause();
+                    backgroundMusic.currentTime = 0;
+                } catch (error) {
+                    console.warn('⚠️ 停止背景音乐失败:', error);
+                }
+            }
+            
             if (backgroundMusicSource) {
                 try {
                     backgroundMusicSource.stop();
                     backgroundMusicSource = null;
                 } catch (error) {
-                    console.warn('⚠️ 停止背景音乐失败:', error);
+                    console.warn('⚠️ 停止合成音乐失败:', error);
                 }
             }
         }
@@ -1828,7 +2110,15 @@
             // 开始游戏按钮
             document.getElementById('startGameBtn').addEventListener('click', function() {
                 selectedGrade = parseInt(document.getElementById('gradeSelect').value);
-                console.log('📚 选择年级:', selectedGrade);
+                selectedDifficulty = document.getElementById('difficultySelect').value;
+                console.log('📚 选择年级:', selectedGrade, '难度:', selectedDifficulty);
+                
+                // 恢复音频上下文（用户交互后激活）
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume().then(() => {
+                        console.log('🔊 音频上下文已恢复');
+                    });
+                }
                 
                 // 初始化语音合成
                 if ('speechSynthesis' in window) {
@@ -1846,14 +2136,26 @@
             
             // 游戏说明按钮
             document.getElementById('instructionsBtn').addEventListener('click', function() {
-                alert('🎮 游戏说明:\n\n1. 使用方向键或触摸控制飞机移动\n2. 按空格键或射击按钮发射子弹\n3. 射击标有目标单词的红色敌机\n4. 避免射击灰色干扰敌机\n5. 连续击中目标可获得连击奖励\n6. 每击中5个目标单词即可升级武器\n7. 生命值为0时游戏结束');
+                const instructions = '🎮 游戏说明:\n\n1. 使用方向键或触摸控制飞机移动\n2. 按空格键或射击按钮发射子弹\n3. 射击标有目标单词的红色敌机\n4. 避免射击灰色干扰敌机\n5. 连续击中目标可获得连击奖励\n6. 每击中5个目标单词即可升级武器\n7. 生命值为0时游戏结束';
+                
+                // 创建自定义弹窗，字体稍微小一点
+                const dialog = document.createElement('div');
+                dialog.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);z-index:10000;max-width:450px;font-size:14px;line-height:1.4;color:black;display:block;visibility:visible;opacity:1';
+                dialog.innerHTML = instructions.replace(/\n/g, '<br>') + '<br><br><button onclick="this.parentElement.remove()" style="background:#007AFF;color:white;border:none;padding:8px 16px;border-radius:5px;cursor:pointer">确定</button>';
+                document.body.appendChild(dialog);
             });
             
-            // 测试语音按钮
-            document.getElementById('testSpeechBtn').addEventListener('click', testSpeech);
+            // 词汇本按钮
+            document.getElementById('vocabularyBtn').addEventListener('click', showVocabulary);
             
-            // 暂停按钮
-            document.getElementById('pauseBtn').addEventListener('click', pauseGame);
+            // 已学单词按钮  
+            document.getElementById('viewWordsBtn').addEventListener('click', showLearnedWords);
+            
+            // 游戏内返回按钮
+            document.getElementById('backBtn').addEventListener('click', backToMenu);
+            
+            // 移动端暂停按钮
+            document.getElementById('mobilePauseBtn').addEventListener('click', pauseGame);
             
             // 再玩一次按钮
             document.getElementById('playAgainBtn').addEventListener('click', startGame);

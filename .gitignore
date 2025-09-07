@@ -29,3 +29,5 @@ __pycache__/
 # 构建输出
 dist/
 build/
+# Local Netlify folder
+.netlify

@@ -2546,7 +2546,7 @@
                 // 创建HTML5 Audio元素播放背景音乐
                 backgroundMusic = new Audio('background.mp3');
                 backgroundMusic.loop = true;
-                backgroundMusic.volume = 0.3;
+                backgroundMusic.volume = 0.21;
                 backgroundMusic.preload = 'auto';
                 
                 backgroundMusic.addEventListener('canplay', () => {
@@ -2593,7 +2593,7 @@
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 backgroundMusicGain = audioContext.createGain();
                 backgroundMusicGain.connect(audioContext.destination);
-                backgroundMusicGain.gain.value = 0.3;
+                backgroundMusicGain.gain.value = 0.21;
                 console.log('🔊 合成音频系统初始化成功');
             } catch (error) {
                 console.warn('⚠️ 合成音频系统初始化失败:', error);

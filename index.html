@@ -1186,8 +1186,10 @@
             
             update() {
                 // 限制玩家在屏幕边界内
+                // 为底部移动控制区域预留180px空间
+                const bottomMargin = 180;
                 this.x = Math.max(this.width / 2, Math.min(canvasWidth - this.width / 2, this.x));
-                this.y = Math.max(this.height / 2, Math.min(canvasHeight - this.height / 2, this.y));
+                this.y = Math.max(this.height / 2, Math.min(canvasHeight - this.height / 2 - bottomMargin, this.y));
             }
             
             draw(ctx) {
@@ -2196,21 +2198,25 @@
                 case 'a':
                 case 'A':
                     player.x -= player.speed;
+                    player.update();
                     break;
                 case 'ArrowRight':
                 case 'd':
                 case 'D':
                     player.x += player.speed;
+                    player.update();
                     break;
                 case 'ArrowUp':
                 case 'w':
                 case 'W':
                     player.y -= player.speed;
+                    player.update();
                     break;
                 case 'ArrowDown':
                 case 's':
                 case 'S':
                     player.y += player.speed;
+                    player.update();
                     break;
                 case ' ':
                 case 'Enter':
@@ -2269,6 +2275,9 @@
                     // 移动玩家
                     player.x += normalizedX * player.speed;
                     player.y += normalizedY * player.speed;
+                    
+                    // 应用边界检测
+                    player.update();
                 }
             });
             

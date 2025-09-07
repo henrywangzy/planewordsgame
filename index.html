@@ -587,6 +587,214 @@
             -ms-user-select: none;
             user-select: none;
         }
+
+        /* 单词本界面样式 */
+        #vocabularyScreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            overflow-y: auto;
+            height: 100vh;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .vocabulary-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 300px;
+        }
+
+        #vocabSearch {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            outline: none;
+        }
+
+        .grade-selector select {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            outline: none;
+        }
+
+        .word-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex: 1;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+
+        .word-item {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .word-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .word-content {
+            flex: 1;
+        }
+
+        .word-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .word-phonetic {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .word-meaning {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .play-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease, transform 0.2s ease;
+            flex-shrink: 0;
+            margin-left: 15px;
+        }
+
+        .play-button:hover {
+            background: #45a049;
+            transform: scale(1.1);
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            border-radius: 25px;
+            color: white;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .pagination button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #pageInfo {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .total-count {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            #vocabularyScreen {
+                padding: 15px;
+            }
+
+            .vocabulary-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-container {
+                max-width: none;
+            }
+
+            .word-item {
+                padding: 15px;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .word-content {
+                margin-bottom: 15px;
+            }
+
+            .play-button {
+                margin-left: 0;
+            }
+
+            .pagination {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -718,6 +926,38 @@
                 返回主菜单 🏠
             </button>
         </div>
+
+        <!-- 单词本界面 -->
+        <div id="vocabularyScreen" class="screen">
+            <div class="vocabulary-header">
+                <button class="back-button" onclick="backToMenu()">← 返回</button>
+                <div class="search-container">
+                    <input type="text" id="vocabSearch" placeholder="搜索单词..." oninput="searchWords()">
+                </div>
+                <div class="grade-selector">
+                    <select id="vocabGradeSelect" onchange="changeVocabGrade()">
+                        <option value="">全部年级</option>
+                        <option value="1">1年级</option>
+                        <option value="2">2年级</option>
+                        <option value="3">3年级</option>
+                        <option value="4">4年级</option>
+                        <option value="5">5年级</option>
+                        <option value="6">6年级</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="wordList" class="word-list">
+                <!-- 单词列表将在这里动态生成 -->
+            </div>
+            
+            <div class="pagination">
+                <button id="prevPage" onclick="changePage(-1)">上一页</button>
+                <span id="pageInfo">1 / 13</span>
+                <button id="nextPage" onclick="changePage(1)">下一页</button>
+                <span id="totalCount" class="total-count">总数: 130</span>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -742,6 +982,13 @@
         let wordReadingInProgress = false;  // 是否正在朗读单词
         let autoSwitchTimeout = null;       // 自动切换计时器
         let learnedWords = []; // 已学习的单词列表
+        
+        // 单词本相关变量
+        let vocabularyWords = [];  // 所有单词库
+        let filteredWords = [];    // 筛选后的单词
+        let currentVocabPage = 1;  // 当前页码
+        let wordsPerPage = 10;     // 每页显示的单词数
+        let currentVocabGrade = '';// 当前选择的年级
         
         // 游戏统计
         let score = 0;
@@ -1005,12 +1252,19 @@
             switchScreen('startScreen');
             currentScreen = 'start';
             
-            // 延迟播放背景音乐（等待用户交互）
+            // 立即尝试播放背景音乐
             setTimeout(() => {
-                if (currentScreen === 'start') {
-                    playBackgroundMusic();
-                }
-            }, 1000);
+                playBackgroundMusic();
+            }, 200);
+            
+            // 为避免浏览器自动播放限制，监听第一次用户交互
+            const startMusicOnInteraction = () => {
+                playBackgroundMusic();
+                document.removeEventListener('click', startMusicOnInteraction);
+                document.removeEventListener('touchstart', startMusicOnInteraction);
+            };
+            document.addEventListener('click', startMusicOnInteraction);
+            document.addEventListener('touchstart', startMusicOnInteraction);
             
             console.log('✅ 游戏初始化完成');
         }
@@ -1527,8 +1781,7 @@
             initHealthBar();
             updateHealthBar();
             
-            // 播放背景音乐
-            playBackgroundMusic();
+            // 游戏初始化时不播放背景音乐，在页面加载时已经开始播放
         }
         
         function selectNewTargetWord() {
@@ -1910,24 +2163,30 @@
         }
         
         function pauseGame() {
+            if (!gameRunning) return; // 只在游戏运行时才能暂停
+            
             gamePaused = !gamePaused;
             console.log(gamePaused ? '⏸️ 游戏暂停' : '▶️ 游戏继续');
             
             if (gamePaused) {
+                // 暂停游戏循环
+                if (gameLoopId) {
+                    cancelAnimationFrame(gameLoopId);
+                    gameLoopId = null;
+                }
+                
                 // 暂停背景音乐
                 if (backgroundMusic && !backgroundMusic.paused) {
                     backgroundMusic.pause();
-                    console.log('🎵 背景音乐暂停');
                 }
-            } else if (gameRunning) {
+            } else {
                 // 恢复游戏循环
                 lastTime = performance.now();
                 gameLoopId = requestAnimationFrame(gameLoop);
                 
                 // 恢复背景音乐
-                if (backgroundMusic && backgroundMusic.paused) {
+                if (backgroundMusic && backgroundMusic.paused && audioEnabled) {
                     backgroundMusic.play().catch(e => console.log('背景音乐播放失败:', e));
-                    console.log('🎵 背景音乐恢复');
                 }
             }
         }
@@ -1978,30 +2237,176 @@
         }
         
         function showVocabulary() {
-            console.log('📚 显示词汇本');
-            const currentWords = words[selectedGrade] || words[1];
-            let vocabularyText = `📚 ${selectedGrade}年级单词本:\n\n`;
-            
-            currentWords.forEach((wordObj, index) => {
-                vocabularyText += `${index + 1}. ${wordObj.word} - ${wordObj.chinese}\n`;
-            });
-            
-            alert(vocabularyText);
+            console.log('📚 显示单词本界面');
+            initializeVocabularyWords();
+            switchScreen('vocabularyScreen');
+            displayWords();
         }
         
         function showLearnedWords() {
-            console.log('📖 显示已学单词');
+            console.log('📖 显示已学单词界面');
             if (learnedWords.length === 0) {
                 alert('📝 还没有学习任何单词，快去游戏中学习吧！');
                 return;
             }
             
-            let learnedText = `📖 已学习的单词 (${learnedWords.length}个):\n\n`;
-            learnedWords.forEach((wordObj, index) => {
-                learnedText += `${index + 1}. ${wordObj.word} - ${wordObj.chinese}\n`;
+            // 设置为只显示已学单词
+            vocabularyWords = [...learnedWords];
+            filteredWords = [...learnedWords];
+            currentVocabPage = 1;
+            switchScreen('vocabularyScreen');
+            displayWords();
+        }
+        
+        // ============================================
+        // 单词本功能函数
+        // ============================================
+        
+        function initializeVocabularyWords() {
+            // 初始化单词库，合并所有年级的单词
+            vocabularyWords = [];
+            Object.keys(words).forEach(grade => {
+                words[grade].forEach(wordObj => {
+                    vocabularyWords.push({
+                        ...wordObj,
+                        grade: grade
+                    });
+                });
+            });
+            filteredWords = [...vocabularyWords];
+            currentVocabPage = 1;
+        }
+        
+        function displayWords() {
+            const wordListDiv = document.getElementById('wordList');
+            const startIndex = (currentVocabPage - 1) * wordsPerPage;
+            const endIndex = startIndex + wordsPerPage;
+            const wordsToShow = filteredWords.slice(startIndex, endIndex);
+            
+            let html = '';
+            wordsToShow.forEach((wordObj, index) => {
+                const isLearned = learnedWords.some(learned => learned.word === wordObj.word);
+                html += `
+                    <div class="word-item">
+                        <div class="word-content">
+                            <div class="word-title">${wordObj.word} ${isLearned ? '✓' : ''}</div>
+                            <div class="word-phonetic">/${getPhonetic(wordObj.word)}/ ${wordObj.chinese || ''}</div>
+                            <div class="word-meaning">${wordObj.sentence || wordObj.meaning || ''}</div>
+                        </div>
+                        <button class="play-button" onclick="playWordAudio('${wordObj.word}', '${wordObj.chinese || ''}', '${wordObj.sentence || ''}')">
+                            🔊
+                        </button>
+                    </div>
+                `;
             });
             
-            alert(learnedText);
+            wordListDiv.innerHTML = html;
+            updatePagination();
+        }
+        
+        function getPhonetic(word) {
+            // 简单的音标映射，实际项目中应该有完整的音标数据库
+            const phonetics = {
+                'cat': 'kæt',
+                'dog': 'dɔːɡ',
+                'bird': 'bɜːrd',
+                'fish': 'fɪʃ',
+                'duck': 'dʌk',
+                'hello': 'həˈloʊ',
+                'bye': 'baɪ',
+                'yes': 'jes',
+                'no': 'noʊ',
+                'red': 'red',
+                'blue': 'bluː',
+                'green': 'ɡriːn',
+                'yellow': 'ˈjeloʊ'
+            };
+            return phonetics[word.toLowerCase()] || word.toLowerCase();
+        }
+        
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredWords.length / wordsPerPage);
+            const pageInfo = document.getElementById('pageInfo');
+            const totalCount = document.getElementById('totalCount');
+            const prevButton = document.getElementById('prevPage');
+            const nextButton = document.getElementById('nextPage');
+            
+            pageInfo.textContent = `${currentVocabPage} / ${totalPages}`;
+            totalCount.textContent = `总数: ${filteredWords.length}`;
+            
+            prevButton.disabled = currentVocabPage <= 1;
+            nextButton.disabled = currentVocabPage >= totalPages;
+        }
+        
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredWords.length / wordsPerPage);
+            currentVocabPage += direction;
+            
+            if (currentVocabPage < 1) currentVocabPage = 1;
+            if (currentVocabPage > totalPages) currentVocabPage = totalPages;
+            
+            displayWords();
+        }
+        
+        function searchWords() {
+            const searchTerm = document.getElementById('vocabSearch').value.toLowerCase();
+            filteredWords = vocabularyWords.filter(word => 
+                word.word.toLowerCase().includes(searchTerm) ||
+                (word.chinese && word.chinese.includes(searchTerm))
+            );
+            currentVocabPage = 1;
+            displayWords();
+        }
+        
+        function changeVocabGrade() {
+            const selectedGrade = document.getElementById('vocabGradeSelect').value;
+            currentVocabGrade = selectedGrade;
+            
+            if (selectedGrade === '') {
+                filteredWords = [...vocabularyWords];
+            } else {
+                filteredWords = vocabularyWords.filter(word => word.grade == selectedGrade);
+            }
+            
+            currentVocabPage = 1;
+            displayWords();
+        }
+        
+        function playWordAudio(word, chinese, sentence) {
+            console.log(`🔊 播放单词: ${word}`);
+            
+            // 先读英文单词
+            if (typeof speechSynthesis !== 'undefined') {
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8;
+                speechSynthesis.speak(utterance);
+                
+                // 延迟后读中文
+                setTimeout(() => {
+                    if (chinese) {
+                        const chineseUtterance = new SpeechSynthesisUtterance(chinese);
+                        chineseUtterance.lang = 'zh-CN';
+                        chineseUtterance.rate = 0.8;
+                        speechSynthesis.speak(chineseUtterance);
+                    }
+                }, 1500);
+                
+                // 如果有例句，最后读例句
+                if (sentence) {
+                    setTimeout(() => {
+                        const sentenceUtterance = new SpeechSynthesisUtterance(sentence);
+                        sentenceUtterance.lang = 'en-US';
+                        sentenceUtterance.rate = 0.8;
+                        speechSynthesis.speak(sentenceUtterance);
+                    }, 3500);
+                }
+            }
+        }
+        
+        function backToMenu() {
+            switchScreen('startScreen');
+            currentScreen = 'start';
         }
         
         function showExampleDialog(englishExample, chineseExample) {
@@ -2089,20 +2494,44 @@
                 backgroundMusic = new Audio('background.mp3');
                 backgroundMusic.loop = true;
                 backgroundMusic.volume = 0.3;
+                backgroundMusic.preload = 'auto';
                 
                 backgroundMusic.addEventListener('canplay', () => {
                     console.log('🔊 背景音乐文件加载成功');
                 });
                 
+                backgroundMusic.addEventListener('loadstart', () => {
+                    console.log('🔊 开始加载背景音乐文件');
+                });
+                
+                backgroundMusic.addEventListener('ended', () => {
+                    console.log('🎵 背景音乐播放结束，重新开始');
+                    if (!gamePaused) {
+                        backgroundMusic.play().catch(e => console.log('重新播放失败:', e));
+                    }
+                });
+                
+                backgroundMusic.addEventListener('pause', () => {
+                    console.log('🎵 背景音乐暂停');
+                });
+                
+                backgroundMusic.addEventListener('play', () => {
+                    console.log('🎵 背景音乐开始播放');
+                });
+                
                 backgroundMusic.addEventListener('error', (e) => {
-                    console.warn('⚠️ 背景音乐加载失败，使用合成音频:', e);
+                    console.warn('⚠️ 背景音乐加载失败，使用合成音频:', e.target.error);
                     // 如果MP3文件加载失败，回退到Web Audio API
                     initSynthAudio();
                 });
                 
+                // 立即加载音频文件
+                backgroundMusic.load();
+                
                 console.log('🔊 音频系统初始化成功');
             } catch (error) {
                 console.warn('⚠️ 音频系统初始化失败:', error);
+                initSynthAudio();
             }
         }
         
@@ -2154,9 +2583,13 @@
             
             if (backgroundMusic) {
                 try {
-                    backgroundMusic.currentTime = 0;
-                    backgroundMusic.play();
-                    console.log('🎵 开始播放背景音乐');
+                    // 只有在音乐暂停或未开始时才播放
+                    if (backgroundMusic.paused || backgroundMusic.currentTime === 0) {
+                        backgroundMusic.play();
+                        console.log('🎵 开始播放背景音乐');
+                    } else {
+                        console.log('🎵 背景音乐已在播放中');
+                    }
                 } catch (error) {
                     console.warn('⚠️ 播放背景音乐失败:', error);
                     // 回退到合成音频

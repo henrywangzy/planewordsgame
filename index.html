@@ -260,6 +260,12 @@
 
         .header-left {
             display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .target-info {
+            display: flex;
             flex-direction: column;
             gap: var(--spacing-xs);
         }
@@ -448,13 +454,13 @@
 
         /* 返回按钮 */
         .back-button {
-            position: absolute;
-            top: var(--spacing-lg);
-            left: var(--spacing-lg);
-            width: 44px;
-            height: 44px;
+            position: relative;
+            top: 0;
+            left: 0;
+            width: 40px;
+            height: 40px;
             background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.4);
             border-radius: 50%;
             color: var(--text-light);
             font-size: 1.2rem;
@@ -465,11 +471,17 @@
             justify-content: center;
             transition: all 0.3s ease;
             z-index: 4;
+            flex-shrink: 0;
         }
 
         .back-button:hover {
             background: rgba(255, 255, 255, 0.3);
             transform: scale(1.1);
+        }
+
+        .back-button:active {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0.95);
         }
 
         .pause-button:hover, .settings-button:hover {
@@ -632,8 +644,12 @@
                 <!-- 顶部信息栏 -->
                 <div class="game-header">
                     <div class="header-left">
-                        <div class="target-word" id="targetWord">目标: Loading...</div>
-                        <div class="target-chinese" id="targetChinese">加载中...</div>
+                        <!-- 返回按钮 -->
+                        <button id="backBtn" class="back-button">←</button>
+                        <div class="target-info">
+                            <div class="target-word" id="targetWord">目标: Loading...</div>
+                            <div class="target-chinese" id="targetChinese">加载中...</div>
+                        </div>
                     </div>
                     <div class="header-right">
                         <div>分数: <span id="scoreDisplay">0</span></div>
@@ -641,9 +657,6 @@
                         <div>武器: <span id="weaponDisplay">基础</span></div>
                     </div>
                 </div>
-
-                <!-- 返回按钮 -->
-                <button id="backBtn" class="back-button">←</button>
                 
                 <!-- 血槽显示 -->
                 <div class="health-bar" id="healthBar"></div>
@@ -726,6 +739,8 @@
         let particles = [];
         let targetWord = null;
         let currentWordData = null;
+        let wordReadingInProgress = false;  // 是否正在朗读单词
+        let autoSwitchTimeout = null;       // 自动切换计时器
         let learnedWords = []; // 已学习的单词列表
         
         // 游戏统计
@@ -1043,8 +1058,19 @@
             // 检查语音开关
             if (!speechEnabled) {
                 console.log('🔇 语音功能已关闭');
+                wordReadingInProgress = false;
+                // 语音关闭时也设置自动切换
+                autoSwitchTimeout = setTimeout(() => {
+                    if (gameRunning && !gamePaused) {
+                        console.log('⏰ 语音功能关闭，自动切换到下一个单词');
+                        selectNewTargetWord();
+                    }
+                }, 3000);
                 return;
             }
+            
+            // 设置朗读状态
+            wordReadingInProgress = true;
             
             // 使用Web Speech API进行单词朗读
             if ('speechSynthesis' in window) {
@@ -1102,6 +1128,15 @@
                                                                             
                                                                             chineseExampleUtterance.onend = function() {
                                                                                 console.log('✅ 完整单词朗读结束');
+                                                                                wordReadingInProgress = false;
+                                                                                
+                                                                                // 设置自动切换计时器（5秒后如果目标敌机仍未被击中，自动切换）
+                                                                                autoSwitchTimeout = setTimeout(() => {
+                                                                                    if (gameRunning && !gamePaused) {
+                                                                                        console.log('⏰ 朗读完成后自动切换到下一个单词');
+                                                                                        selectNewTargetWord();
+                                                                                    }
+                                                                                }, 5000);
                                                                             };
                                                                             
                                                                             speechSynthesis.speak(chineseExampleUtterance);
@@ -1118,6 +1153,18 @@
                                                 } catch (e) {
                                                     console.error('❌ 英文例句朗读错误:', e);
                                                 }
+                                            } else {
+                                                // 没有例句，中文朗读完成后设置自动切换
+                                                console.log('✅ 中文朗读结束（无例句）');
+                                                wordReadingInProgress = false;
+                                                
+                                                // 设置自动切换计时器
+                                                autoSwitchTimeout = setTimeout(() => {
+                                                    if (gameRunning && !gamePaused) {
+                                                        console.log('⏰ 朗读完成后自动切换到下一个单词');
+                                                        selectNewTargetWord();
+                                                    }
+                                                }, 5000);
                                             }
                                         }, 800);
                                     };
@@ -1138,6 +1185,14 @@
                 }
             } else {
                 console.warn('⚠️ 浏览器不支持语音合成');
+                // 不支持语音合成时，仍然设置自动切换
+                wordReadingInProgress = false;
+                autoSwitchTimeout = setTimeout(() => {
+                    if (gameRunning && !gamePaused) {
+                        console.log('⏰ 无语音支持，自动切换到下一个单词');
+                        selectNewTargetWord();
+                    }
+                }, 3000); // 较短的等待时间
             }
         }
         
@@ -1247,9 +1302,6 @@
                         newBullets.push(new Bullet(this.x, this.y - this.height / 2, 0, -8, 'player'));
                         newBullets.push(new Bullet(this.x + 15, this.y - this.height / 2, 1, -8, 'player'));
                         break;
-                    case 4: // 激光武器
-                        newBullets.push(new Laser(this.x, this.y - this.height / 2));
-                        break;
                 }
                 
                 return newBullets;
@@ -1265,7 +1317,7 @@
                 this.word = word;
                 this.isTarget = isTarget;
                 this.speed = this.getDifficultySpeed();
-                this.health = 1;
+                this.health = 1; // 所有敌机一击消灭
                 this.movementPattern = Math.floor(Math.random() * 4); // 0-3 不同运动模式
                 this.startTime = Date.now();
                 this.amplitude = 30; // 摆动幅度
@@ -1301,7 +1353,18 @@
             
             draw(ctx) {
                 // 绘制敌机
-                ctx.fillStyle = this.isTarget ? '#F44336' : '#666666';
+                if (this.isTarget) {
+                    // 目标敌机 - 红色，更明显
+                    ctx.fillStyle = '#F44336';
+                    ctx.shadowColor = '#F44336';
+                    ctx.shadowBlur = 8;
+                } else {
+                    // 干扰敌机 - 灰色
+                    ctx.fillStyle = '#666666';
+                    ctx.shadowColor = '#666666';
+                    ctx.shadowBlur = 4;
+                }
+                
                 ctx.beginPath();
                 // 敌机倒三角形状
                 ctx.moveTo(this.x, this.y + this.height / 2);
@@ -1310,19 +1373,36 @@
                 ctx.closePath();
                 ctx.fill();
                 
+                // 清除阴影
+                ctx.shadowBlur = 0;
+                
                 // 绘制单词
                 ctx.fillStyle = 'white';
-                ctx.font = '12px Arial';
+                ctx.font = 'bold 12px Arial';
                 ctx.textAlign = 'center';
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                ctx.strokeText(this.word, this.x, this.y + 3);
                 ctx.fillText(this.word, this.x, this.y + 3);
                 
-                // 目标敌机特殊标记
+                // 目标敌机特殊标记 - 金色光环
                 if (this.isTarget) {
                     ctx.strokeStyle = '#FFC107';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.width / 2 + 8, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    // 闪烁效果
+                    const time = Date.now();
+                    const alpha = 0.5 + 0.5 * Math.sin(time * 0.008);
+                    ctx.globalAlpha = alpha;
+                    ctx.strokeStyle = '#FFEB3B';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.width / 2 + 5, 0, Math.PI * 2);
+                    ctx.arc(this.x, this.y, this.width / 2 + 12, 0, Math.PI * 2);
                     ctx.stroke();
+                    ctx.globalAlpha = 1;
                 }
             }
             
@@ -1368,40 +1448,6 @@
             }
         }
         
-        class Laser extends Bullet {
-            constructor(x, y) {
-                super(x, y, 0, -12, 'player');
-                this.width = 6;
-                this.height = canvasHeight; // 激光贯穿整个屏幕
-                this.damage = 5;
-                this.duration = 100; // 激光持续时间
-                this.startTime = Date.now();
-            }
-            
-            update() {
-                // 激光不移动，但有持续时间
-            }
-            
-            draw(ctx) {
-                const alpha = Math.max(0, 1 - (Date.now() - this.startTime) / this.duration);
-                ctx.globalAlpha = alpha;
-                
-                // 绘制激光光束
-                const gradient = ctx.createLinearGradient(this.x - this.width/2, 0, this.x + this.width/2, 0);
-                gradient.addColorStop(0, 'rgba(156, 39, 176, 0)');
-                gradient.addColorStop(0.5, 'rgba(156, 39, 176, 1)');
-                gradient.addColorStop(1, 'rgba(156, 39, 176, 0)');
-                
-                ctx.fillStyle = gradient;
-                ctx.fillRect(this.x - this.width / 2, 0, this.width, canvasHeight);
-                
-                ctx.globalAlpha = 1;
-            }
-            
-            isOffScreen() {
-                return Date.now() - this.startTime > this.duration;
-            }
-        }
         
         class Particle {
             constructor(x, y, vx, vy, color, life) {
@@ -1455,6 +1501,13 @@
             maxCombo = 0;
             weaponLevel = 1;
             learnedWords = [];
+            wordReadingInProgress = false;
+            
+            // 清除自动切换计时器
+            if (autoSwitchTimeout) {
+                clearTimeout(autoSwitchTimeout);
+                autoSwitchTimeout = null;
+            }
             
             // 清空游戏对象数组
             enemies = [];
@@ -1482,6 +1535,12 @@
             const currentWords = words[selectedGrade];
             if (!currentWords || currentWords.length === 0) return;
             
+            // 清除之前的自动切换计时器
+            if (autoSwitchTimeout) {
+                clearTimeout(autoSwitchTimeout);
+                autoSwitchTimeout = null;
+            }
+            
             // 随机选择一个单词作为目标
             const randomIndex = Math.floor(Math.random() * currentWords.length);
             currentWordData = currentWords[randomIndex];
@@ -1493,11 +1552,12 @@
             
             console.log('🎯 新目标单词:', targetWord, currentWordData.chinese);
             
-            // 播放单词语音朗读
+            // 立即播放单词语音朗读
             if (speechEnabled && currentWordData) {
+                // 短暂延迟避免与游戏音效冲突
                 setTimeout(() => {
                     playWordReading(currentWordData);
-                }, 500); // 延迟500ms后播放，避免与游戏音效冲突
+                }, 200);
             }
         }
         
@@ -1604,22 +1664,30 @@
                     const enemy = enemies[j];
                     
                     if (isColliding(bullet, enemy)) {
-                        // 击中敌机
+                        // 击中敌机 - 一击消灭
                         enemiesHitCount++;
+                        console.log(`💥 击中敌机: ${enemy.word}, 目标敌机: ${enemy.isTarget}`);
                         
                         if (enemy.isTarget) {
-                            // 击中目标敌机
+                            // 击中目标敌机 - 正确答案
                             correctWordsCount++;
                             combo++;
                             maxCombo = Math.max(maxCombo, combo);
+                            
+                            // 清除自动切换计时器和朗读状态（因为玩家已成功击中）
+                            if (autoSwitchTimeout) {
+                                clearTimeout(autoSwitchTimeout);
+                                autoSwitchTimeout = null;
+                            }
+                            wordReadingInProgress = false;
                             
                             // 计算得分（包含连击奖励）
                             const baseScore = 50;
                             const comboBonus = Math.floor(combo * 0.1 * baseScore);
                             score += baseScore + comboBonus;
                             
-                            // 播放单词语音
-                            playWordReading(currentWordData);
+                            // 显示成功提示
+                            showNotification(`✅ 正确！+${baseScore + comboBonus}分`, '#4CAF50');
                             
                             // 武器升级检查
                             if (correctWordsCount > 0 && correctWordsCount % 5 === 0) {
@@ -1630,7 +1698,7 @@
                             if (correctWordsCount > 0 && correctWordsCount % 5 === 0 && health < maxHealth) {
                                 health++;
                                 updateHealthBar();
-                                showNotification('血槽恢复！');
+                                showNotification('❤️ 血槽恢复！', '#4CAF50');
                             }
                             
                             // 记录已学习单词
@@ -1646,13 +1714,14 @@
                             createExplosionParticles(enemy.x, enemy.y, '#4CAF50');
                             
                         } else {
-                            // 击中干扰敌机
+                            // 击中干扰敌机 - 错误答案
                             score += 10;
                             combo = Math.max(0, combo - 1); // 减少连击数但不低于0
+                            showNotification('❌ 错误单词！+10分', '#FF9800');
                             createExplosionParticles(enemy.x, enemy.y, '#FF9800');
                         }
                         
-                        // 移除子弹和敌机
+                        // 移除子弹和敌机 - 一击必杀
                         bullets.splice(i, 1);
                         enemies.splice(j, 1);
                         break;
@@ -1686,7 +1755,7 @@
         }
         
         function upgradeWeapon() {
-            if (weaponLevel < 4) {
+            if (weaponLevel < 3) {
                 weaponLevel++;
                 player.weapon = weaponLevel;
                 
@@ -1709,16 +1778,58 @@
             }
         }
         
-        function showNotification(text) {
-            // 简单的通知显示（可以后续改进为更好的UI）
+        function showNotification(text, color = '#FFFFFF') {
             console.log('📢 通知:', text);
+            
+            // 创建浮动通知
+            const notification = document.createElement('div');
+            notification.textContent = text;
+            notification.style.cssText = `
+                position: fixed;
+                top: 25%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: ${color};
+                padding: 10px 20px;
+                border-radius: 20px;
+                font-size: 14px;
+                font-weight: bold;
+                z-index: 1000;
+                pointer-events: none;
+                animation: fadeInOut 2s ease-in-out forwards;
+            `;
+            
+            // 添加动画样式
+            if (!document.getElementById('notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    @keyframes fadeInOut {
+                        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                        20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                        80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                        100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(notification);
+            
+            // 2秒后移除通知
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 2000);
         }
         
         function updateUI() {
             document.getElementById('scoreDisplay').textContent = score;
             document.getElementById('livesDisplay').textContent = `${health}/${maxHealth}`;
             
-            const weaponNames = ['', '基础', '双发', '三发', '激光'];
+            const weaponNames = ['', '基础', '双发', '三发'];
             document.getElementById('weaponDisplay').textContent = weaponNames[weaponLevel] || '基础';
         }
         
@@ -2238,64 +2349,114 @@
             const joystickKnob = document.getElementById('joystickKnob');
             const shootBtn = document.getElementById('shootBtn');
             
-            // 触摸状态追踪
-            let joystickTouchId = null;
-            let shootTouchId = null;
-            let joystickStartPos = { x: 0, y: 0 };
+            // 触摸状态追踪 - 使用 Map 来管理多个触摸点
+            const activeTouches = new Map(); // touchId -> { element, type, data }
             let shootInterval = null;
             
-            // 摇杆触摸开始
+            // 辅助函数：查找特定类型的触摸
+            function findTouchByType(type) {
+                for (let [touchId, touchData] of activeTouches) {
+                    if (touchData.type === type) return { touchId, ...touchData };
+                }
+                return null;
+            }
+            
+            // 辅助函数：移除特定触摸
+            function removeTouchById(touchId) {
+                const touchData = activeTouches.get(touchId);
+                if (touchData) {
+                    if (touchData.type === 'joystick') {
+                        joystickActive = false;
+                        joystickPosition = { x: 0, y: 0 };
+                        joystickKnob.style.transform = 'translate(0px, 0px)';
+                    } else if (touchData.type === 'shoot') {
+                        if (shootInterval) {
+                            clearInterval(shootInterval);
+                            shootInterval = null;
+                        }
+                    }
+                    activeTouches.delete(touchId);
+                }
+            }
+            
+            // 摇杆区域触摸处理
             joystickArea.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                if (joystickTouchId !== null) return; // 已经有摇杆触摸了
+                e.stopPropagation(); // 阻止事件冒泡，但不阻止默认行为
                 
-                const touch = e.touches[e.touches.length - 1]; // 获取最新的触摸点
-                joystickTouchId = touch.identifier;
-                
-                const rect = joystickArea.getBoundingClientRect();
-                joystickStartPos = {
-                    x: rect.left + rect.width / 2,
-                    y: rect.top + rect.height / 2
-                };
-                joystickActive = true;
+                // 只处理当前元素内的触摸
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+                    
+                    // 如果已经有摇杆触摸，忽略
+                    if (findTouchByType('joystick')) continue;
+                    
+                    const rect = joystickArea.getBoundingClientRect();
+                    const joystickStartPos = {
+                        x: rect.left + rect.width / 2,
+                        y: rect.top + rect.height / 2
+                    };
+                    
+                    activeTouches.set(touch.identifier, {
+                        type: 'joystick',
+                        element: joystickArea,
+                        startPos: joystickStartPos
+                    });
+                    
+                    joystickActive = true;
+                    console.log(`🕹️ 摇杆触摸开始: ID ${touch.identifier}`);
+                    break; // 只处理第一个触摸点
+                }
             });
             
-            // 射击按钮触摸开始
+            // 射击按钮触摸处理
             shootBtn.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                if (shootTouchId !== null) return; // 已经有射击触摸了
+                e.stopPropagation();
                 
-                const touch = e.touches[e.touches.length - 1];
-                shootTouchId = touch.identifier;
-                
-                // 立即射击一次
-                if (player && currentScreen === 'game' && gameRunning && !gamePaused) {
-                    const newBullets = player.shoot();
-                    bullets.push(...newBullets);
-                }
-                
-                // 开始连发射击
-                if (shootInterval) clearInterval(shootInterval);
-                shootInterval = setInterval(() => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+                    
+                    // 如果已经有射击触摸，忽略
+                    if (findTouchByType('shoot')) continue;
+                    
+                    activeTouches.set(touch.identifier, {
+                        type: 'shoot',
+                        element: shootBtn
+                    });
+                    
+                    // 立即射击
                     if (player && currentScreen === 'game' && gameRunning && !gamePaused) {
                         const newBullets = player.shoot();
                         bullets.push(...newBullets);
                     }
-                }, 150); // 每150毫秒射击一次
+                    
+                    // 开始连发
+                    if (shootInterval) clearInterval(shootInterval);
+                    shootInterval = setInterval(() => {
+                        if (player && currentScreen === 'game' && gameRunning && !gamePaused && findTouchByType('shoot')) {
+                            const newBullets = player.shoot();
+                            bullets.push(...newBullets);
+                        }
+                    }, 150);
+                    
+                    console.log(`🔥 射击触摸开始: ID ${touch.identifier}`);
+                    break;
+                }
             });
             
             // 全局触摸移动处理
             document.addEventListener('touchmove', function(e) {
                 e.preventDefault();
                 
-                // 处理所有触摸点
                 for (let i = 0; i < e.touches.length; i++) {
                     const touch = e.touches[i];
+                    const touchData = activeTouches.get(touch.identifier);
+                    
+                    if (!touchData) continue;
                     
                     // 摇杆移动处理
-                    if (touch.identifier === joystickTouchId && player) {
-                        const deltaX = touch.clientX - joystickStartPos.x;
-                        const deltaY = touch.clientY - joystickStartPos.y;
+                    if (touchData.type === 'joystick' && player) {
+                        const deltaX = touch.clientX - touchData.startPos.x;
+                        const deltaY = touch.clientY - touchData.startPos.y;
                         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
                         const maxDistance = 40;
                         
@@ -2325,31 +2486,23 @@
             document.addEventListener('touchend', function(e) {
                 e.preventDefault();
                 
-                // 检查哪些触摸点结束了
-                const activeTouchIds = Array.from(e.touches).map(touch => touch.identifier);
-                
-                // 摇杆触摸结束
-                if (joystickTouchId !== null && !activeTouchIds.includes(joystickTouchId)) {
-                    joystickTouchId = null;
-                    joystickActive = false;
-                    joystickPosition = { x: 0, y: 0 };
-                    joystickKnob.style.transform = 'translate(0px, 0px)';
-                }
-                
-                // 射击触摸结束
-                if (shootTouchId !== null && !activeTouchIds.includes(shootTouchId)) {
-                    shootTouchId = null;
-                    if (shootInterval) {
-                        clearInterval(shootInterval);
-                        shootInterval = null;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+                    const touchData = activeTouches.get(touch.identifier);
+                    
+                    if (touchData) {
+                        console.log(`🔚 触摸结束: ID ${touch.identifier}, 类型: ${touchData.type}`);
+                        removeTouchById(touch.identifier);
                     }
                 }
             });
             
-            // 触摸取消处理（例如用户手指移出屏幕）
+            // 触摸取消处理
             document.addEventListener('touchcancel', function(e) {
-                joystickTouchId = null;
-                shootTouchId = null;
+                console.log('❌ 触摸取消，清除所有触摸状态');
+                
+                // 清除所有触摸状态
+                activeTouches.clear();
                 joystickActive = false;
                 joystickPosition = { x: 0, y: 0 };
                 joystickKnob.style.transform = 'translate(0px, 0px)';
@@ -2358,6 +2511,14 @@
                     shootInterval = null;
                 }
             });
+            
+            // 调试信息
+            setInterval(() => {
+                if (activeTouches.size > 0) {
+                    const touchInfo = Array.from(activeTouches.entries()).map(([id, data]) => `${id}:${data.type}`).join(', ');
+                    console.log(`🔍 活跃触摸: [${touchInfo}]`);
+                }
+            }, 2000);
         }
 
         // ============================================

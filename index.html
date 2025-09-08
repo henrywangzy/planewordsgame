@@ -393,13 +393,13 @@
         
         .mobile-pause-button {
             position: absolute;
-            right: var(--spacing-sm);
-            top: calc(50% + 110px);  /* 血槽下方位置：血槽中心 + 100px（血槽高度一半）+ 10px间距 */
+            right: 30px;  /* 右侧距离边缘30px，在你圈出的黄色方框位置 */
+            bottom: 200px; /* 距离底部200px，在你圈出的黄色方框区域 */
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.6);
-            border: 2px solid rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.8);  /* 提高透明度让按钮更清晰可见 */
+            border: 2px solid rgba(255, 255, 255, 1);
             font-size: 24px;
             cursor: pointer;
             user-select: none;
@@ -410,6 +410,8 @@
             color: white;
             pointer-events: auto;
             z-index: 15;
+            /* 增强可见性 */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
             /* Android Edge兼容性修复 */
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;

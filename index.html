@@ -141,7 +141,7 @@
         /* 按钮样式 */
         .button {
             background: linear-gradient(135deg, var(--laser-green), #45a049);
-            color: white !important; /* 强制白色文字 */
+            color: #ffffff !important; /* 强制白色文字 */
             border: none;
             border-radius: 25px;
             padding: var(--spacing-lg) var(--spacing-2xl);
@@ -155,7 +155,7 @@
             box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
             position: relative;
             overflow: hidden;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* 添加文字阴影增强可读性 */
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7); /* 添加文字阴影增强可读性 */
             /* Android Edge兼容性修复 */
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
@@ -181,9 +181,9 @@
         .button-secondary {
             background: linear-gradient(135deg, var(--light-blue), var(--primary-blue));
             box-shadow: 0 4px 12px rgba(63, 81, 181, 0.3);
-            color: white !important; /* 强制白色文字 */
-            font-weight: 600; /* 增强字体粗度 */
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* 添加文字阴影增强可读性 */
+            color: #ffffff !important; /* 强制白色文字 */
+            font-weight: 700; /* 增强字体粗度 */
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7); /* 添加文字阴影增强可读性 */
         }
 
         .button-secondary:hover {
@@ -783,17 +783,20 @@
             flex: 1;
             overflow-y: auto;
             max-height: calc(100vh - 200px);
+            padding: 0; /* 第一层不再加额外内边距 */
         }
 
         .word-item {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px 20px; /* 增加上下内边距 */
             display: flex;
             align-items: center;
             justify-content: space-between;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%; /* 确保占满可用宽度 */
+            box-sizing: border-box;
         }
 
         .word-item:hover {
@@ -803,13 +806,16 @@
 
         .word-content {
             flex: 1;
+            min-width: 0; /* 防止flex子元素溢出 */
+            margin-right: 15px; /* 与右侧按钮的间距 */
         }
 
         .word-title {
-            font-size: 24px;
+            font-size: 26px; /* 稍微增大字体 */
             font-weight: bold;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            word-break: break-all; /* 防止长单词溢出 */
         }
 
         .word-phonetic {
@@ -1653,25 +1659,132 @@
             }
             
             draw(ctx) {
-                // 绘制飞机主体
-                ctx.fillStyle = '#4CAF50';
+                ctx.save();
+                
+                // 计算飞机各部分的位置
+                const centerX = this.x;
+                const centerY = this.y;
+                const halfWidth = this.width / 2;
+                const halfHeight = this.height / 2;
+                
+                // 1. 绘制机身主体（椭圆形）
+                ctx.fillStyle = '#2196F3'; // 蓝色机身
                 ctx.beginPath();
-                // 飞机三角形形状
-                ctx.moveTo(this.x, this.y - this.height / 2);
-                ctx.lineTo(this.x - this.width / 2, this.y + this.height / 2);
-                ctx.lineTo(this.x + this.width / 2, this.y + this.height / 2);
+                ctx.ellipse(centerX, centerY, halfWidth * 0.6, halfHeight * 0.8, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 2. 绘制机头（尖锐的椭圆）
+                ctx.fillStyle = '#1976D2'; // 深蓝色机头
+                ctx.beginPath();
+                ctx.ellipse(centerX, centerY - halfHeight * 0.7, halfWidth * 0.4, halfHeight * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 3. 绘制主机翼（左右对称）
+                ctx.fillStyle = '#1E88E5';
+                // 左机翼
+                ctx.beginPath();
+                ctx.moveTo(centerX - halfWidth * 0.3, centerY - halfHeight * 0.2);
+                ctx.lineTo(centerX - halfWidth, centerY + halfHeight * 0.1);
+                ctx.lineTo(centerX - halfWidth * 0.8, centerY + halfHeight * 0.3);
+                ctx.lineTo(centerX - halfWidth * 0.3, centerY + halfHeight * 0.1);
                 ctx.closePath();
                 ctx.fill();
                 
-                // 绘制飞机细节
-                ctx.fillStyle = '#2E7D32';
-                ctx.fillRect(this.x - 3, this.y - 10, 6, 20);
-                
-                // 根据武器等级绘制不同的武器显示
-                ctx.fillStyle = this.getWeaponColor();
+                // 右机翼
                 ctx.beginPath();
-                ctx.arc(this.x, this.y - this.height / 2 + 5, 3, 0, Math.PI * 2);
+                ctx.moveTo(centerX + halfWidth * 0.3, centerY - halfHeight * 0.2);
+                ctx.lineTo(centerX + halfWidth, centerY + halfHeight * 0.1);
+                ctx.lineTo(centerX + halfWidth * 0.8, centerY + halfHeight * 0.3);
+                ctx.lineTo(centerX + halfWidth * 0.3, centerY + halfHeight * 0.1);
+                ctx.closePath();
                 ctx.fill();
+                
+                // 4. 绘制尾翼（垂直和水平）
+                ctx.fillStyle = '#1565C0';
+                // 垂直尾翼
+                ctx.fillRect(centerX - 2, centerY + halfHeight * 0.3, 4, halfHeight * 0.4);
+                // 水平尾翼（左右）
+                ctx.fillRect(centerX - halfWidth * 0.4, centerY + halfHeight * 0.6, halfWidth * 0.8, 3);
+                
+                // 5. 绘制驾驶舱（透明效果）
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.beginPath();
+                ctx.ellipse(centerX, centerY - halfHeight * 0.3, halfWidth * 0.25, halfHeight * 0.2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 6. 绘制发动机细节
+                ctx.fillStyle = '#0D47A1';
+                ctx.fillRect(centerX - halfWidth * 0.15, centerY + halfHeight * 0.1, halfWidth * 0.3, 4);
+                
+                // 7. 根据武器等级绘制武器系统
+                this.drawWeaponSystem(ctx, centerX, centerY, halfWidth, halfHeight);
+                
+                // 8. 绘制机身高光效果
+                const gradient = ctx.createLinearGradient(centerX - halfWidth * 0.3, centerY - halfHeight * 0.5, centerX + halfWidth * 0.3, centerY + halfHeight * 0.5);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+                gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.ellipse(centerX, centerY, halfWidth * 0.6, halfHeight * 0.8, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+            
+            drawWeaponSystem(ctx, centerX, centerY, halfWidth, halfHeight) {
+                const weaponColor = this.getWeaponColor();
+                ctx.fillStyle = weaponColor;
+                
+                switch(this.weapon) {
+                    case 1: // 基础武器 - 单发射器
+                        ctx.fillRect(centerX - 2, centerY - halfHeight * 0.8, 4, 8);
+                        ctx.beginPath();
+                        ctx.arc(centerX, centerY - halfHeight * 0.9, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                        
+                    case 2: // 双发武器 - 双发射器
+                        ctx.fillRect(centerX - 8, centerY - halfHeight * 0.8, 4, 8);
+                        ctx.fillRect(centerX + 4, centerY - halfHeight * 0.8, 4, 8);
+                        ctx.beginPath();
+                        ctx.arc(centerX - 6, centerY - halfHeight * 0.9, 3, 0, Math.PI * 2);
+                        ctx.arc(centerX + 6, centerY - halfHeight * 0.9, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                        
+                    case 3: // 三发武器 - 三发射器
+                        ctx.fillRect(centerX - 2, centerY - halfHeight * 0.8, 4, 8);
+                        ctx.fillRect(centerX - 10, centerY - halfHeight * 0.7, 3, 6);
+                        ctx.fillRect(centerX + 7, centerY - halfHeight * 0.7, 3, 6);
+                        ctx.beginPath();
+                        ctx.arc(centerX, centerY - halfHeight * 0.9, 3, 0, Math.PI * 2);
+                        ctx.arc(centerX - 8, centerY - halfHeight * 0.8, 2, 0, Math.PI * 2);
+                        ctx.arc(centerX + 8, centerY - halfHeight * 0.8, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                        
+                    case 4: // 激光武器 - 激光发射器
+                        // 绘制激光发射器外壳
+                        ctx.fillRect(centerX - 6, centerY - halfHeight * 0.8, 12, 10);
+                        // 绘制激光发射口（发光效果）
+                        const laserGradient = ctx.createRadialGradient(centerX, centerY - halfHeight * 0.9, 0, centerX, centerY - halfHeight * 0.9, 8);
+                        laserGradient.addColorStop(0, weaponColor);
+                        laserGradient.addColorStop(0.5, 'rgba(156, 39, 176, 0.5)');
+                        laserGradient.addColorStop(1, 'rgba(156, 39, 176, 0)');
+                        ctx.fillStyle = laserGradient;
+                        ctx.beginPath();
+                        ctx.arc(centerX, centerY - halfHeight * 0.9, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 绘制激光核心
+                        ctx.fillStyle = '#E1BEE7';
+                        ctx.beginPath();
+                        ctx.arc(centerX, centerY - halfHeight * 0.9, 4, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                }
             }
             
             getWeaponColor() {
@@ -2140,6 +2253,15 @@
                                 health++;
                                 updateHealthBar();
                                 showNotification('❤️ 血槽恢复！', '#4CAF50');
+                            }
+                            
+                            // 显示单词例句弹窗
+                            if (currentWordData.example && currentWordData.example.trim()) {
+                                const englishExample = extractEnglish(currentWordData.example);
+                                const chineseExample = extractChinese(currentWordData.example);
+                                if (englishExample || chineseExample) {
+                                    showExampleDialog(englishExample || '', chineseExample || '');
+                                }
                             }
                             
                             // 记录已学习单词
@@ -2680,7 +2802,7 @@
                 // 创建HTML5 Audio元素播放背景音乐
                 backgroundMusic = new Audio('background.mp3');
                 backgroundMusic.loop = true;
-                backgroundMusic.volume = 0.21;
+                backgroundMusic.volume = 0.126;
                 backgroundMusic.preload = 'auto';
                 
                 backgroundMusic.addEventListener('canplay', () => {
@@ -2727,7 +2849,7 @@
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 backgroundMusicGain = audioContext.createGain();
                 backgroundMusicGain.connect(audioContext.destination);
-                backgroundMusicGain.gain.value = 0.21;
+                backgroundMusicGain.gain.value = 0.126;
                 console.log('🔊 合成音频系统初始化成功');
             } catch (error) {
                 console.warn('⚠️ 合成音频系统初始化失败:', error);

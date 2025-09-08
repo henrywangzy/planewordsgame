@@ -141,7 +141,7 @@
         /* 按钮样式 */
         .button {
             background: linear-gradient(135deg, var(--laser-green), #45a049);
-            color: white;
+            color: white !important; /* 强制白色文字 */
             border: none;
             border-radius: 25px;
             padding: var(--spacing-lg) var(--spacing-2xl);
@@ -155,6 +155,7 @@
             box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
             position: relative;
             overflow: hidden;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* 添加文字阴影增强可读性 */
             /* Android Edge兼容性修复 */
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
@@ -180,6 +181,9 @@
         .button-secondary {
             background: linear-gradient(135deg, var(--light-blue), var(--primary-blue));
             box-shadow: 0 4px 12px rgba(63, 81, 181, 0.3);
+            color: white !important; /* 强制白色文字 */
+            font-weight: 600; /* 增强字体粗度 */
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* 添加文字阴影增强可读性 */
         }
 
         .button-secondary:hover {
@@ -199,13 +203,15 @@
 
         .grade-select {
             background: rgba(255, 255, 255, 0.2);
-            color: white;
+            color: white !important; /* 强制白色文字 */
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 12px;
             padding: var(--spacing-md) var(--spacing-lg);
             font-size: 1rem;
             min-width: 120px;
             cursor: pointer;
+            font-weight: 600; /* 增强字体粗度 */
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); /* 添加文字阴影 */
         }
 
         .grade-select option {
@@ -392,15 +398,16 @@
         }
         
         .mobile-pause-button {
-            position: absolute;
-            right: 30px;  /* 右侧距离边缘30px，在你圈出的黄色方框位置 */
-            bottom: 200px; /* 距离底部200px，在你圈出的黄色方框区域 */
-            width: 60px;
-            height: 60px;
+            position: fixed !important;
+            right: 20px !important;     /* 强制右侧定位，距右边20px */
+            left: unset !important;      /* 确保没有左侧定位 */
+            top: 130px !important;       /* 右上角位置 */
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.8);  /* 提高透明度让按钮更清晰可见 */
             border: 2px solid rgba(255, 255, 255, 1);
-            font-size: 24px;
+            font-size: 20px;
             cursor: pointer;
             user-select: none;
             display: flex;
@@ -421,6 +428,14 @@
         .mobile-pause-button:active {
             background: rgba(255, 255, 255, 0.6);
             transform: scale(0.95);
+        }
+
+        /* 强制暂停按钮位置到右侧 */
+        #mobilePauseBtn {
+            position: fixed !important;
+            right: 20px !important;  /* 距离右边屏幕边缘20px */
+            top: 130px !important;   /* 距离血槽底部20px的位置 */
+            left: unset !important;
         }
 
         /* 暂停和设置按钮 */
@@ -616,7 +631,7 @@
 
         /* Android Edge浏览器特殊修复 */
         @supports (-webkit-appearance: none) {
-            .button, .mobile-pause-button, .shoot-button, 
+            .button, .shoot-button, 
             .back-button, .pause-button, .settings-button, 
             .play-button, .pagination button {
                 -webkit-appearance: none !important;
@@ -624,6 +639,15 @@
                 outline: none !important;
                 border: none !important;
                 position: relative !important;
+                z-index: 999 !important;
+            }
+            
+            /* 暂停按钮单独处理，不覆盖position */
+            .mobile-pause-button {
+                -webkit-appearance: none !important;
+                -webkit-tap-highlight-color: rgba(0,0,0,0.1) !important;
+                outline: none !important;
+                border: none !important;
                 z-index: 999 !important;
             }
             
@@ -694,7 +718,7 @@
         /* 单词本界面样式 */
         #vocabularyScreen {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
+            padding: 20px 5px; /* 左右5px边距，上下保持20px */
             overflow-y: auto;
             height: 100vh;
             box-sizing: border-box;
@@ -867,7 +891,7 @@
         /* 移动端适配 */
         @media (max-width: 768px) {
             #vocabularyScreen {
-                padding: 15px;
+                padding: 15px 5px; /* 移动端也保持左右5px边距 */
             }
 
             .vocabulary-header {
@@ -987,14 +1011,14 @@
                     </div>
                 </div>
 
-                <!-- 独立暂停按钮（血槽下方） -->
-                <button class="mobile-pause-button touch-target" id="mobilePauseBtn">⏸️</button>
-                
                 <!-- 右侧按钮组 -->
                 <div class="right-controls">
                     <button class="shoot-button touch-target" id="shootBtn">🔥</button>
                 </div>
             </div>
+            
+            <!-- 独立暂停按钮（移到mobile-controls外，使用fixed定位） -->
+            <button class="mobile-pause-button touch-target" id="mobilePauseBtn">⏸️</button>
         </div>
 
         <!-- 游戏结束界面 -->
@@ -1789,10 +1813,10 @@
             
             getDifficultySpeed() {
                 switch(selectedDifficulty) {
-                    case 'easy': return 1.2;      // 降低低速难度
-                    case 'medium': return 1.4;    // 中速只比低速快一点点
-                    case 'hard': return 1.7;      // 高速比中速快一点点
-                    default: return 1.4;
+                    case 'easy': return 0.6;      // 降低50%: 1.2 → 0.6
+                    case 'medium': return 0.7;    // 降低50%: 1.4 → 0.7  
+                    case 'hard': return 0.85;     // 降低50%: 1.7 → 0.85
+                    default: return 0.7;
                 }
             }
             
@@ -2339,10 +2363,9 @@
                     gameLoopId = null;
                 }
                 
-                // 暂停背景音乐
-                if (backgroundMusic && !backgroundMusic.paused) {
-                    backgroundMusic.pause();
-                }
+                // 停止所有音频（包括语音朗读和背景音乐）
+                stopAllAudio();
+                
             } else {
                 // 恢复游戏循环
                 lastTime = performance.now();

@@ -155,6 +155,11 @@
             box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
             position: relative;
             overflow: hidden;
+            /* Android Edge兼容性修复 */
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            pointer-events: auto;
+            z-index: 10;
         }
 
         .button:hover {
@@ -364,6 +369,11 @@
             justify-content: center;
             transition: all 0.2s ease;
             box-shadow: 0 4px 12px rgba(255, 99, 71, 0.4);
+            z-index: 15;
+            /* Android Edge兼容性修复 */
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
         }
 
         .shoot-button:active {
@@ -399,7 +409,11 @@
             transition: all 0.2s;
             color: white;
             pointer-events: auto;
-            z-index: 5;
+            z-index: 15;
+            /* Android Edge兼容性修复 */
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
         }
         
         .mobile-pause-button:active {
@@ -598,6 +612,32 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Android Edge浏览器特殊修复 */
+        @supports (-webkit-appearance: none) {
+            .button, .mobile-pause-button, .shoot-button, 
+            .back-button, .pause-button, .settings-button, 
+            .play-button, .pagination button {
+                -webkit-appearance: none !important;
+                -webkit-tap-highlight-color: rgba(0,0,0,0.1) !important;
+                outline: none !important;
+                border: none !important;
+                position: relative !important;
+                z-index: 999 !important;
+            }
+            
+            .button:active, .mobile-pause-button:active, .shoot-button:active {
+                transform: scale(0.98) !important;
+                transition: transform 0.1s ease !important;
+            }
+        }
+        
+        /* 强制Android Edge按钮可点击 */
+        .screen.active button {
+            pointer-events: auto !important;
+            touch-action: manipulation !important;
+            z-index: 100 !important;
+        }
+
         /* 响应式调整 */
         @media (max-width: 350px) {
             .game-title {
@@ -624,9 +664,22 @@
             }
         }
 
-        /* 触控优化 */
+        /* 触控优化 - Android Edge兼容性增强 */
         .touch-target {
             touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* 确保所有按钮都有正确的触控设置 */
+        button, .button, [role="button"] {
+            touch-action: manipulation !important;
+            -webkit-tap-highlight-color: transparent !important;
+            pointer-events: auto !important;
         }
 
         .no-select {
@@ -2782,8 +2835,25 @@
         // ============================================
         
         function bindEventListeners() {
+            // Android Edge兼容性：强制绑定触摸事件
+            function addMobileClickSupport(element, callback) {
+                if (element) {
+                    // 标准点击事件
+                    element.addEventListener('click', callback);
+                    // 触摸事件（Android Edge兼容）
+                    element.addEventListener('touchstart', function(e) {
+                        e.stopPropagation();
+                    });
+                    element.addEventListener('touchend', function(e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        callback();
+                    });
+                }
+            }
+            
             // 开始游戏按钮
-            document.getElementById('startGameBtn').addEventListener('click', function() {
+            addMobileClickSupport(document.getElementById('startGameBtn'), function() {
                 selectedGrade = parseInt(document.getElementById('gradeSelect').value);
                 selectedDifficulty = document.getElementById('difficultySelect').value;
                 console.log('📚 选择年级:', selectedGrade, '难度:', selectedDifficulty);
@@ -2809,8 +2879,8 @@
                 startGame();
             });
             
-            // 游戏说明按钮
-            document.getElementById('instructionsBtn').addEventListener('click', function() {
+            // 使用增强的移动端兼容性绑定其他按钮
+            addMobileClickSupport(document.getElementById('instructionsBtn'), function() {
                 const instructions = '🎮 游戏说明:\n\n1. 使用方向键或触摸控制飞机移动\n2. 按空格键或射击按钮发射子弹\n3. 射击标有目标单词的红色敌机\n4. 避免射击灰色干扰敌机\n5. 连续击中目标可获得连击奖励\n6. 每击中5个目标单词即可升级武器\n7. 生命值为0时游戏结束';
                 
                 // 创建自定义弹窗，字体稍微小一点
@@ -2820,23 +2890,12 @@
                 document.body.appendChild(dialog);
             });
             
-            // 词汇本按钮
-            document.getElementById('vocabularyBtn').addEventListener('click', showVocabulary);
-            
-            // 已学单词按钮  
-            document.getElementById('viewWordsBtn').addEventListener('click', showLearnedWords);
-            
-            // 游戏内返回按钮
-            document.getElementById('backBtn').addEventListener('click', backToMenu);
-            
-            // 移动端暂停按钮
-            document.getElementById('mobilePauseBtn').addEventListener('click', pauseGame);
-            
-            // 再玩一次按钮
-            document.getElementById('playAgainBtn').addEventListener('click', startGame);
-            
-            // 返回主菜单按钮
-            document.getElementById('backToMenuBtn').addEventListener('click', backToMenu);
+            addMobileClickSupport(document.getElementById('vocabularyBtn'), showVocabulary);
+            addMobileClickSupport(document.getElementById('viewWordsBtn'), showLearnedWords);
+            addMobileClickSupport(document.getElementById('backBtn'), backToMenu);
+            addMobileClickSupport(document.getElementById('mobilePauseBtn'), pauseGame);
+            addMobileClickSupport(document.getElementById('playAgainBtn'), startGame);
+            addMobileClickSupport(document.getElementById('backToMenuBtn'), backToMenu);
             
             // 键盘控制
             document.addEventListener('keydown', function(event) {
@@ -3005,9 +3064,12 @@
                 }
             });
             
-            // 全局触摸移动处理
+            // 全局触摸移动处理 - 仅阻止游戏区域滚动
             document.addEventListener('touchmove', function(e) {
-                e.preventDefault();
+                // 只在游戏屏幕时阻止默认行为，避免阻止按钮点击
+                if (currentScreen === 'game') {
+                    e.preventDefault();
+                }
                 
                 for (let i = 0; i < e.touches.length; i++) {
                     const touch = e.touches[i];
@@ -3044,9 +3106,16 @@
                 }
             }, { passive: false });
             
-            // 全局触摸结束处理
+            // 全局触摸结束处理 - 避免阻止按钮点击
             document.addEventListener('touchend', function(e) {
-                e.preventDefault();
+                // 只在游戏屏幕且不是按钮触摸时阻止默认行为
+                const target = e.target;
+                const isButton = target.tagName === 'BUTTON' || target.classList.contains('button') || 
+                                target.classList.contains('touch-target');
+                
+                if (currentScreen === 'game' && !isButton) {
+                    e.preventDefault();
+                }
                 
                 for (let i = 0; i < e.changedTouches.length; i++) {
                     const touch = e.changedTouches[i];

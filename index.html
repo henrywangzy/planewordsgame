@@ -88,6 +88,12 @@
             align-items: center;
         }
 
+        /* 首页特殊定位 - 向上移动25px */
+        #startScreen {
+            justify-content: center;
+            padding-top: calc(var(--spacing-2xl) - 25px);
+        }
+
         .screen.active {
             display: flex;
         }
@@ -376,6 +382,9 @@
         }
         
         .mobile-pause-button {
+            position: absolute;
+            right: var(--spacing-sm);
+            top: calc(50% + 110px);  /* 血槽下方位置：血槽中心 + 100px（血槽高度一半）+ 10px间距 */
             width: 60px;
             height: 60px;
             border-radius: 50%;
@@ -390,6 +399,7 @@
             transition: all 0.2s;
             color: white;
             pointer-events: auto;
+            z-index: 5;
         }
         
         .mobile-pause-button:active {
@@ -922,9 +932,11 @@
                     </div>
                 </div>
 
+                <!-- 独立暂停按钮（血槽下方） -->
+                <button class="mobile-pause-button touch-target" id="mobilePauseBtn">⏸️</button>
+                
                 <!-- 右侧按钮组 -->
                 <div class="right-controls">
-                    <button class="mobile-pause-button touch-target" id="mobilePauseBtn">⏸️</button>
                     <button class="shoot-button touch-target" id="shootBtn">🔥</button>
                 </div>
             </div>
@@ -1715,10 +1727,10 @@
             
             getDifficultySpeed() {
                 switch(selectedDifficulty) {
-                    case 'easy': return 1.5;
-                    case 'medium': return 2;
-                    case 'hard': return 3;
-                    default: return 2;
+                    case 'easy': return 1.2;      // 降低低速难度
+                    case 'medium': return 1.4;    // 中速只比低速快一点点
+                    case 'hard': return 1.7;      // 高速比中速快一点点
+                    default: return 1.4;
                 }
             }
             
@@ -1867,6 +1879,15 @@
             }
         }
         
+        function getEnemySpawnRate() {
+            switch(selectedDifficulty) {
+                case 'easy': return 0.015;     // 低速：较低生成频率
+                case 'medium': return 0.022;   // 中速：稍高生成频率
+                case 'hard': return 0.030;     // 高速：较高生成频率
+                default: return 0.022;
+            }
+        }
+        
         function spawnEnemies() {
             if (enemies.length >= 6) return; // 限制同屏敌机数量
             
@@ -1951,8 +1972,9 @@
             // 碰撞检测
             checkCollisions();
             
-            // 定期生成敌机
-            if (Math.random() < 0.02) { // 2% 概率每帧
+            // 定期生成敌机 - 根据难度调整生成频率
+            const spawnRate = getEnemySpawnRate();
+            if (Math.random() < spawnRate) {
                 spawnEnemies();
             }
             
@@ -1992,8 +2014,8 @@
                             const comboBonus = Math.floor(combo * 0.1 * baseScore);
                             score += baseScore + comboBonus;
                             
-                            // 显示成功提示
-                            showNotification(`✅ 正确！+${baseScore + comboBonus}分`, '#4CAF50');
+                            // 显示成功提示 (已注释掉频繁字幕)
+                            // showNotification(`✅ 正确！+${baseScore + comboBonus}分`, '#4CAF50');
                             
                             // 武器升级检查
                             if (correctWordsCount > 0 && correctWordsCount % 5 === 0) {
@@ -2023,7 +2045,7 @@
                             // 击中干扰敌机 - 错误答案
                             score += 10;
                             combo = Math.max(0, combo - 1); // 减少连击数但不低于0
-                            showNotification('❌ 错误单词！+10分', '#FF9800');
+                            // showNotification('❌ 错误单词！+10分', '#FF9800');  // 已注释掉频繁字幕
                             createExplosionParticles(enemy.x, enemy.y, '#FF9800');
                         }
                         

@@ -1164,7 +1164,6 @@
 
         // 音效控制
         let audioEnabled = true;
-        let speechEnabled = true;
         let musicPlaying = true; // 背景音乐播放状态
 
         // ============================================
@@ -1470,9 +1469,9 @@
             wordReadingComplete = false;
             forceTargetSpawn = true; // 强制生成目标敌机
             
-            // 检查语音开关
-            if (!speechEnabled) {
-                console.log('🔇 语音功能已关闭，模拟完整流程');
+            // 检查音频开关
+            if (!audioEnabled) {
+                console.log('🔇 音频功能已关闭，模拟完整流程');
                 // 语音关闭时模拟完整流程时长（约15秒）
                 setTimeout(() => {
                     completeWordReadingFlow();
@@ -1643,7 +1642,7 @@
                 this.y = y;
                 this.width = 40;
                 this.height = 50;
-                this.speed = 5;
+                this.speed = this.getPlayerSpeed();
                 this.health = 3;
                 this.weapon = 1; // 武器等级 1-4
                 this.lastShot = 0;
@@ -1801,24 +1800,47 @@
                 return Date.now() - this.lastShot > this.shotCooldown;
             }
             
+            getPlayerSpeed() {
+                // 根据难度调整玩家飞机速度
+                switch(selectedDifficulty) {
+                    case 'easy': return 4;      // 低难度：稍慢的移动速度
+                    case 'medium': return 5;    // 中难度：标准移动速度
+                    case 'hard': return 6;      // 高难度：较快的移动速度
+                    default: return 5;
+                }
+            }
+            
+            getBulletSpeed() {
+                // 根据难度调整子弹速度
+                switch(selectedDifficulty) {
+                    case 'easy': return -6;     // 低难度：较慢的子弹
+                    case 'medium': return -7;   // 中难度：标准速度
+                    case 'hard': return -8;     // 高难度：快速子弹
+                    default: return -7;
+                }
+            }
+            
             shoot() {
                 if (!this.canShoot()) return [];
                 
                 this.lastShot = Date.now();
                 const newBullets = [];
                 
+                // 根据难度获取子弹速度
+                const bulletSpeed = this.getBulletSpeed();
+                
                 switch(this.weapon) {
                     case 1: // 基础武器 - 单发
-                        newBullets.push(new Bullet(this.x, this.y - this.height / 2, 0, -8, 'player'));
+                        newBullets.push(new Bullet(this.x, this.y - this.height / 2, 0, bulletSpeed, 'player'));
                         break;
                     case 2: // 双发武器
-                        newBullets.push(new Bullet(this.x - 10, this.y - this.height / 2, 0, -8, 'player'));
-                        newBullets.push(new Bullet(this.x + 10, this.y - this.height / 2, 0, -8, 'player'));
+                        newBullets.push(new Bullet(this.x - 10, this.y - this.height / 2, 0, bulletSpeed, 'player'));
+                        newBullets.push(new Bullet(this.x + 10, this.y - this.height / 2, 0, bulletSpeed, 'player'));
                         break;
                     case 3: // 三发武器
-                        newBullets.push(new Bullet(this.x - 15, this.y - this.height / 2, -1, -8, 'player'));
-                        newBullets.push(new Bullet(this.x, this.y - this.height / 2, 0, -8, 'player'));
-                        newBullets.push(new Bullet(this.x + 15, this.y - this.height / 2, 1, -8, 'player'));
+                        newBullets.push(new Bullet(this.x - 15, this.y - this.height / 2, -1, bulletSpeed, 'player'));
+                        newBullets.push(new Bullet(this.x, this.y - this.height / 2, 0, bulletSpeed, 'player'));
+                        newBullets.push(new Bullet(this.x + 15, this.y - this.height / 2, 1, bulletSpeed, 'player'));
                         break;
                 }
                 
@@ -1861,7 +1883,8 @@
                         break;
                     case 3: // 螺旋形移动
                         this.x = this.startX + Math.cos(elapsedTime * this.frequency * 2) * (this.amplitude * 0.7);
-                        this.speed = 1.5; // 螺旋移动稍慢一些
+                        // 螺旋移动使用基础速度的80%
+                        this.speed = this.getDifficultySpeed() * 0.8;
                         break;
                 }
                 
@@ -1926,10 +1949,10 @@
             
             getDifficultySpeed() {
                 switch(selectedDifficulty) {
-                    case 'easy': return 0.6;      // 降低50%: 1.2 → 0.6
-                    case 'medium': return 0.7;    // 降低50%: 1.4 → 0.7  
-                    case 'hard': return 0.85;     // 降低50%: 1.7 → 0.85
-                    default: return 0.7;
+                    case 'easy': return 0.3;      // 低难度：非常慢速，适合初学者
+                    case 'medium': return 0.5;    // 中难度：适中速度，有一定挑战
+                    case 'hard': return 0.7;      // 高难度：较快速度，需要反应灵敏
+                    default: return 0.5;
                 }
             }
             
@@ -2080,7 +2103,7 @@
             console.log('📢 开始完整朗读流程，目标敌机将反复出现');
             
             // 立即播放单词语音朗读
-            if (speechEnabled && currentWordData) {
+            if (audioEnabled && currentWordData) {
                 // 短暂延迟避免与游戏音效冲突
                 setTimeout(() => {
                     playWordReading(currentWordData);
@@ -2090,10 +2113,10 @@
         
         function getEnemySpawnRate() {
             switch(selectedDifficulty) {
-                case 'easy': return 0.015;     // 低速：较低生成频率
-                case 'medium': return 0.022;   // 中速：稍高生成频率
-                case 'hard': return 0.030;     // 高速：较高生成频率
-                default: return 0.022;
+                case 'easy': return 0.008;     // 低难度：很低生成频率，给玩家充足反应时间
+                case 'medium': return 0.015;   // 中难度：适中生成频率
+                case 'hard': return 0.025;     // 高难度：较高生成频率，屏幕上敌机较多
+                default: return 0.015;
             }
         }
         

@@ -718,7 +718,7 @@
         /* 单词本界面样式 */
         #vocabularyScreen {
             background: #f5f7fa;
-            padding: 20px 15px;
+            padding: 20px 5px;
             overflow-y: auto;
             height: 100vh;
             box-sizing: border-box;
@@ -794,95 +794,95 @@
         }
 
         .word-list {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 16px;
-            margin-bottom: 30px;
+            display: block;
+            margin: 0;
+            padding: 0 5px;
             flex: 1;
             overflow-y: auto;
             max-height: calc(100vh - 200px);
-            padding: 0;
         }
 
         .word-card {
             background: #ffffff;
-            border-radius: 16px;
-            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: calc(100% - 10px);
+            box-sizing: border-box;
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-            border: 1px solid #f1f5f9;
-            transition: all 0.2s ease;
-            width: 100%;
-            box-sizing: border-box;
+            min-height: auto;
         }
 
         .word-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-            border-color: #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .word-content {
             flex: 1;
-            min-width: 0;
-            margin-right: 20px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            margin-right: 16px;
         }
         
         .word-header {
-            margin-bottom: 12px;
+            margin-bottom: 0;
+            text-align: left;
+            width: 100%;
         }
 
         .word-title {
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 600;
             color: #1a202c;
             margin-bottom: 6px;
             word-break: break-word;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            display: block;
+            text-align: left;
+            line-height: 1.3;
         }
         
         .learned-mark {
             color: #48bb78;
-            font-size: 20px;
+            font-size: 16px;
+            margin-left: 8px;
         }
         
         .word-meta {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 4px;
+            gap: 8px;
+            margin-bottom: 6px;
+            flex-wrap: wrap;
         }
 
         .word-phonetic {
-            font-size: 15px;
-            color: #718096;
+            font-size: 14px;
+            color: #888888;
             font-style: italic;
         }
         
         .word-chinese {
-            font-size: 15px;
-            color: #4a5568;
-            font-weight: 500;
+            font-size: 14px;
+            color: #888888;
+            font-weight: normal;
         }
         
-        .word-examples {
-            margin-top: 8px;
-        }
-
         .word-sentence {
-            font-size: 16px;
-            color: #2d3748;
-            line-height: 1.5;
+            font-size: 14px;
+            color: #1a202c;
+            line-height: 1.4;
             margin-bottom: 4px;
         }
         
         .word-sentence-chinese {
-            font-size: 14px;
-            color: #718096;
+            font-size: 13px;
+            color: #888888;
             line-height: 1.4;
         }
 
@@ -897,9 +897,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
             flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(72, 187, 120, 0.2);
+            box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
         }
 
         .word-play-btn:hover {
@@ -910,6 +910,11 @@
         
         .word-play-btn:active {
             transform: scale(0.95);
+        }
+        
+        .word-play-btn svg {
+            width: 20px;
+            height: 20px;
         }
 
         .pagination {
@@ -1000,19 +1005,12 @@
             }
 
             .word-card {
-                padding: 20px 16px;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
-            }
-            
-            .word-content {
-                margin-right: 0;
-                width: 100%;
+                padding: 16px;
+                margin-bottom: 10px;
             }
             
             .word-title {
-                font-size: 24px;
+                font-size: 22px;
             }
             
             .word-meta {
@@ -1024,18 +1022,15 @@
                 font-size: 14px;
             }
             
-            .word-sentence {
-                font-size: 15px;
-            }
-            
-            .word-sentence-chinese {
-                font-size: 13px;
-            }
             
             .word-play-btn {
-                align-self: center;
                 width: 44px;
                 height: 44px;
+            }
+            
+            .word-play-btn svg {
+                width: 18px;
+                height: 18px;
             }
             
             .pagination {
@@ -1061,17 +1056,35 @@
         
         /* 小屏幕优化 */
         @media (max-width: 480px) {
+            #vocabularyScreen {
+                padding: 15px 5px;
+            }
+            
             .vocabulary-header {
-                padding: 12px;
+                padding: 0 5px 16px 5px;
             }
             
             .word-card {
-                padding: 16px 12px;
-                margin: 0 4px;
+                padding: 14px;
+                margin-bottom: 8px;
             }
             
             .word-title {
-                font-size: 22px;
+                font-size: 20px;
+            }
+            
+            .word-content {
+                margin-right: 12px;
+            }
+            
+            .word-play-btn {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .word-play-btn svg {
+                width: 16px;
+                height: 16px;
             }
             
             .pagination {
@@ -1752,13 +1765,41 @@
             wordReadingComplete = true;
             forceTargetSpawn = false; // 允许正常的敌机生成
             
-            // 设置较长的自动切换时间（10秒后切换下一个单词，给玩家足够时间击中）
+            // 🔥 修复：朗读完成后自动切换到下一个单词（缩短等待时间为3秒）
             autoSwitchTimeout = setTimeout(() => {
                 if (gameRunning && !gamePaused) {
-                    console.log('⏰ 朗读流程完成很久了，自动切换到下一个单词');
+                    console.log('⏰ 朗读流程完成，自动切换到下一个单词');
                     selectNewTargetWord();
                 }
-            }, 10000);
+            }, 3000);
+        }
+        
+        // 🔥 新增：击中目标敌机后启动完整朗读流程的函数
+        function startCompleteWordReading(wordData) {
+            console.log('🎯 开始完整单词朗读流程:', wordData.word);
+            
+            // 清除任何现有的自动切换计时器
+            if (autoSwitchTimeout) {
+                clearTimeout(autoSwitchTimeout);
+                autoSwitchTimeout = null;
+            }
+            
+            // 设置朗读状态标志
+            wordReadingInProgress = true;
+            wordReadingPhase = 0;
+            wordReadingComplete = false;
+            forceTargetSpawn = false; // 朗读期间不强制生成目标敌机
+            
+            // 如果音频已启用，开始朗读流程
+            if (audioEnabled) {
+                startReadingPhase(wordData);
+            } else {
+                // 音频关闭时模拟朗读流程（总时长约12秒）
+                console.log('🔇 音频关闭，模拟完整朗读流程');
+                setTimeout(() => {
+                    completeWordReadingFlow();
+                }, 12000);
+            }
         }
         
         // 提取英文部分
@@ -2246,9 +2287,11 @@
             currentWordData = currentWords[randomIndex];
             targetWord = currentWordData.word;
             
-            // 重置状态变量
+            // 🔥 修复朗读状态重置：新单词选择时正确重置所有相关状态
+            wordReadingInProgress = false;
+            wordReadingPhase = 0;
             wordReadingComplete = false;
-            forceTargetSpawn = true; // 强制生成目标敌机直到朗读完成
+            forceTargetSpawn = true; // 强制生成目标敌机直到玩家击中并完成朗读
             
             // 更新UI显示
             document.getElementById('targetWord').textContent = `目标: ${targetWord}`;
@@ -2291,20 +2334,21 @@
             // 决定目标敌机的生成策略
             let targetPosition = -1; // -1表示不生成目标敌机
             
-            if (forceTargetSpawn && !wordReadingComplete) {
-                // 朗读流程中：强制每次都生成目标敌机
+            // 🔥 修复敌机生成逻辑：根据朗读流程状态决定目标敌机生成策略
+            if (wordReadingInProgress) {
+                // 朗读进行中：不生成目标敌机，等待朗读完成
+                console.log('🎵 朗读进行中，暂不生成目标敌机');
+                targetPosition = -1;
+            } else if (wordReadingComplete && !forceTargetSpawn) {
+                // 朗读完成后：正常随机生成目标敌机（60%概率，给玩家足够机会）
+                if (Math.random() < 0.6) {
+                    targetPosition = Math.floor(Math.random() * 3);
+                    console.log('✅ 朗读完成，生成目标敌机供击中');
+                }
+            } else if (forceTargetSpawn) {
+                // 游戏开始时强制生成第一个目标敌机
                 targetPosition = Math.floor(Math.random() * 3);
-                console.log('🔄 强制生成目标敌机（朗读流程中）');
-            } else if (!wordReadingInProgress && wordReadingComplete) {
-                // 朗读完成后：正常随机生成（50%概率）
-                if (Math.random() < 0.5) {
-                    targetPosition = Math.floor(Math.random() * 3);
-                }
-            } else if (!wordReadingInProgress && !forceTargetSpawn) {
-                // 正常情况：40%概率生成目标敌机
-                if (Math.random() < 0.4) {
-                    targetPosition = Math.floor(Math.random() * 3);
-                }
+                console.log('🎯 强制生成首个目标敌机');
             }
             
             for (let i = 0; i < 3; i++) {
@@ -2448,8 +2492,9 @@
                                 wordsLearnedCount++;
                             }
                             
-                            // 选择新目标单词
-                            selectNewTargetWord();
+                            // 🔥 修复核心问题：击中目标敌机后启动完整朗读流程，而不是立即切换单词
+                            console.log('🎯 击中目标敌机，启动完整朗读流程');
+                            startCompleteWordReading(currentWordData);
                             
                             // 创建成功粒子效果
                             createExplosionParticles(enemy.x, enemy.y, '#4CAF50');
@@ -2788,10 +2833,8 @@
                                     <span class="word-chinese">${chinese}</span>
                                 </div>
                             </div>
-                            <div class="word-examples">
-                                <div class="word-sentence">${sentence}</div>
-                                ${chineseSentence ? `<div class="word-sentence-chinese">${chineseSentence}</div>` : ''}
-                            </div>
+                            ${sentence ? `<div class="word-sentence">${sentence}</div>` : ''}
+                            ${chineseSentence ? `<div class="word-sentence-chinese">${chineseSentence}</div>` : ''}
                         </div>
                         <button class="word-play-btn" onclick="playWordAudio('${wordObj.word}', '${chinese}', '${sentence}')">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -2912,6 +2955,10 @@
         }
         
         function showExampleDialog(englishExample, chineseExample) {
+            // 🔥 修复字幕重叠问题：先清除所有现有的例句弹窗
+            const existingDialogs = document.querySelectorAll('.example-dialog');
+            existingDialogs.forEach(dialog => dialog.remove());
+            
             // 创建简洁透明的例句弹窗
             const dialog = document.createElement('div');
             dialog.className = 'example-dialog';
@@ -2931,7 +2978,7 @@
                 }
             }, 3000);
             
-            console.log('📚 显示例句弹窗:', englishExample, '/', chineseExample);
+            console.log('📚 显示例句弹窗 (已清理重叠):', englishExample, '/', chineseExample);
         }
 
         // ============================================

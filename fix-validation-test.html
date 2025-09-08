@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>朗读流程修复验证测试</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5; 
+        }
+        .test-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .test-item {
+            margin: 15px 0;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .test-item h3 {
+            margin-top: 0;
+            color: #2E7D32;
+        }
+        .code-block {
+            background: #1e1e1e;
+            color: #ffffff;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        .highlight {
+            background: #ffeb3b;
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: #333;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 朗读流程修复验证报告</h1>
+        <p><strong>修复时间：</strong>2025年9月8日</p>
+        <p><strong>修复内容：</strong>确保击中目标敌机后完成完整4阶段朗读流程，不立即切换下一个单词</p>
+
+        <div class="test-item">
+            <h3>❌ 修复前的问题</h3>
+            <ul>
+                <li>击中目标敌机后立即调用 <code>selectNewTargetWord()</code></li>
+                <li>不等待朗读流程完成就切换到下一个单词</li>
+                <li>字幕弹窗可能重叠显示</li>
+                <li>目标敌机在朗读期间不受控制地生成</li>
+            </ul>
+        </div>
+
+        <div class="test-item">
+            <h3>✅ 修复后的改进</h3>
+            <ul>
+                <li><span class="success">新增 `startCompleteWordReading()` 函数</span> - 控制完整朗读流程</li>
+                <li><span class="success">修复碰撞检测逻辑</span> - 击中目标敌机后启动朗读而不是立即切换</li>
+                <li><span class="success">改进敌机生成策略</span> - 朗读期间暂停目标敌机生成</li>
+                <li><span class="success">字幕防重叠机制</span> - 显示新弹窗前清除旧弹窗</li>
+            </ul>
+        </div>
+
+        <div class="test-item">
+            <h3>🔧 核心代码修复</h3>
+            
+            <h4>1. 碰撞检测修复 (第2464-2466行)</h4>
+            <div class="code-block">
+// 修复前：立即切换单词
+selectNewTargetWord();
+
+// 修复后：启动完整朗读流程
+console.log('🎯 击中目标敌机，启动完整朗读流程');
+startCompleteWordReading(currentWordData);
+            </div>
+
+            <h4>2. 新增朗读控制函数 (第1777-1803行)</h4>
+            <div class="code-block">
+function startCompleteWordReading(wordData) {
+    console.log('🎯 开始完整单词朗读流程:', wordData.word);
+    
+    // 清除计时器，设置朗读状态
+    wordReadingInProgress = true;
+    wordReadingPhase = 0;
+    wordReadingComplete = false;
+    forceTargetSpawn = false; // 朗读期间不强制生成目标敌机
+    
+    // 启动4阶段朗读或模拟流程
+    if (audioEnabled) {
+        startReadingPhase(wordData);
+    } else {
+        setTimeout(() => completeWordReadingFlow(), 12000);
+    }
+}
+            </div>
+
+            <h4>3. 敌机生成策略优化 (第2335-2350行)</h4>
+            <div class="code-block">
+// 修复敌机生成逻辑：根据朗读流程状态决定目标敌机生成策略
+if (wordReadingInProgress) {
+    // 朗读进行中：不生成目标敌机，等待朗读完成
+    targetPosition = -1;
+} else if (wordReadingComplete && !forceTargetSpawn) {
+    // 朗读完成后：正常随机生成目标敌机（60%概率）
+    if (Math.random() < 0.6) {
+        targetPosition = Math.floor(Math.random() * 3);
+    }
+}
+            </div>
+
+            <h4>4. 字幕防重叠机制 (第2927-2929行)</h4>
+            <div class="code-block">
+// 修复字幕重叠问题：先清除所有现有的例句弹窗
+const existingDialogs = document.querySelectorAll('.example-dialog');
+existingDialogs.forEach(dialog => dialog.remove());
+            </div>
+        </div>
+
+        <div class="test-item">
+            <h3>🎯 朗读流程控制逻辑</h3>
+            <p><strong>新的游戏流程：</strong></p>
+            <ol>
+                <li>玩家击中目标敌机 → 触发 <span class="highlight">startCompleteWordReading()</span></li>
+                <li>开始4阶段朗读：英文单词 → 中文释义 → 英文例句 → 中文例句</li>
+                <li>朗读期间 <span class="highlight">wordReadingInProgress = true</span>，暂停目标敌机生成</li>
+                <li>朗读完成后 → <span class="highlight">completeWordReadingFlow()</span> → 3秒后自动切换下一个单词</li>
+                <li>切换新单词时重置所有朗读状态标志</li>
+            </ol>
+        </div>
+
+        <div class="test-item">
+            <h3>🧪 测试验证要点</h3>
+            <ul>
+                <li><strong>朗读完整性：</strong>击中目标敌机后必须完整听完4个阶段才能切换下一个单词</li>
+                <li><strong>敌机生成控制：</strong>朗读期间不应该出现新的目标敌机</li>
+                <li><strong>字幕显示：</strong>新的例句弹窗显示前应清除旧弹窗，避免重叠</li>
+                <li><strong>状态同步：</strong>所有朗读相关的状态变量应正确更新</li>
+                <li><strong>音频开关：</strong>音频关闭时应模拟完整流程时长</li>
+            </ul>
+        </div>
+
+        <div class="test-item">
+            <h3>📊 修复效果总结</h3>
+            <p class="success">✅ 已修复核心问题：击中目标敌机后不再立即切换单词</p>
+            <p class="success">✅ 已实现完整朗读流程控制：4阶段朗读必须全部完成</p>
+            <p class="success">✅ 已优化敌机生成策略：朗读期间暂停目标敌机生成</p>
+            <p class="success">✅ 已防止字幕重叠：新弹窗显示前清除旧弹窗</p>
+            
+            <p><strong>现在游戏将按照正确的学习节奏运行：</strong></p>
+            <p>击中目标 → 完整朗读 → 等待切换 → 生成新目标 → 重复循环</p>
+        </div>
+
+        <hr>
+        <p style="text-align: center; color: #666; font-size: 14px;">
+            <strong>游戏文件位置：</strong>E:\claude\planewordsgame\index.html<br>
+            <strong>测试地址：</strong><a href="http://localhost:8000/index.html" target="_blank">http://localhost:8000/index.html</a>
+        </p>
+    </div>
+</body>
+</html>

@@ -4,7 +4,8 @@
   "description": "> 一款结合飞机射击与英语单词学习的移动端H5教育游戏",
   "main": "test-game.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:pause-position": "node test-pause-right-position.js"
   },
   "repository": {
     "type": "git",

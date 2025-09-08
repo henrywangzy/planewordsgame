@@ -1093,6 +1093,11 @@
         let autoSwitchTimeout = null;       // 自动切换计时器
         let learnedWords = []; // 已学习的单词列表
         
+        // 新增：完整朗读流程控制
+        let wordReadingPhase = 0;          // 朗读阶段：0=英文单词, 1=中文释义, 2=英文句子, 3=中文句子
+        let wordReadingComplete = false;   // 整个单词朗读流程是否完成
+        let forceTargetSpawn = true;      // 强制生成目标敌机
+        
         // 单词本相关变量
         let vocabularyWords = [];  // 所有单词库
         let filteredWords = [];    // 筛选后的单词
@@ -1421,153 +1426,155 @@
         // ============================================
         
         function playWordReading(wordData) {
-            console.log('🔊 播放单词朗读:', wordData);
+            console.log('🔊 开始完整单词朗读流程:', wordData);
             
-            // 检查游戏状态，如果游戏暂停或结束，不播放语音
+            // 检查游戏状态
             if (gamePaused || !gameRunning) {
                 console.log('⏸️ 游戏暂停或结束，跳过语音播放');
                 return;
             }
             
+            // 重置朗读状态
+            wordReadingInProgress = true;
+            wordReadingPhase = 0;
+            wordReadingComplete = false;
+            forceTargetSpawn = true; // 强制生成目标敌机
+            
             // 检查语音开关
             if (!speechEnabled) {
-                console.log('🔇 语音功能已关闭');
-                wordReadingInProgress = false;
-                // 语音关闭时也设置自动切换
-                autoSwitchTimeout = setTimeout(() => {
-                    if (gameRunning && !gamePaused) {
-                        console.log('⏰ 语音功能关闭，自动切换到下一个单词');
-                        selectNewTargetWord();
-                    }
-                }, 3000);
+                console.log('🔇 语音功能已关闭，模拟完整流程');
+                // 语音关闭时模拟完整流程时长（约15秒）
+                setTimeout(() => {
+                    completeWordReadingFlow();
+                }, 15000);
                 return;
             }
             
-            // 设置朗读状态
-            wordReadingInProgress = true;
-            
-            // 使用Web Speech API进行单词朗读
+            // 使用Web Speech API进行4阶段朗读
             if ('speechSynthesis' in window) {
-                try {
-                    // 取消任何正在进行的朗读
-                    speechSynthesis.cancel();
-                    
-                    // 先朗读英文单词
-                    const englishUtterance = new SpeechSynthesisUtterance(wordData.word);
-                    englishUtterance.lang = 'en-US';
-                    englishUtterance.rate = 1.0;
-                    englishUtterance.pitch = 1.0;
-                    englishUtterance.volume = 0.8;
-                    
-                    englishUtterance.onend = function() {
-                        // 延迟300ms后朗读中文释义
-                        setTimeout(() => {
-                            if (!gamePaused && gameRunning && speechEnabled) {
-                                try {
-                                    const chineseUtterance = new SpeechSynthesisUtterance(wordData.chinese);
-                                    chineseUtterance.lang = 'zh-CN';
-                                    chineseUtterance.rate = 1.0;
-                                    chineseUtterance.pitch = 1.0;
-                                    chineseUtterance.volume = 0.8;
-                                    
-                                    chineseUtterance.onend = function() {
-                                        // 延迟500ms后朗读英文例句
-                                        setTimeout(() => {
-                                            if (!gamePaused && gameRunning && speechEnabled && wordData.example) {
-                                                try {
-                                                    const englishExample = extractEnglish(wordData.example);
-                                                    const chineseExample = extractChinese(wordData.example);
-                                                    if (englishExample && chineseExample) {
-                                                        // 显示例句弹窗
-                                                        showExampleDialog(englishExample, chineseExample);
-                                                        
-                                                        const exampleUtterance = new SpeechSynthesisUtterance(englishExample);
-                                                        exampleUtterance.lang = 'en-US';
-                                                        exampleUtterance.rate = 1.1;
-                                                        exampleUtterance.pitch = 1.0;
-                                                        exampleUtterance.volume = 0.7;
-                                                        
-                                                        exampleUtterance.onend = function() {
-                                                            // 延迟后朗读中文例句
-                                                            const chineseExample = extractChinese(wordData.example);
-                                                            if (chineseExample) {
-                                                                setTimeout(() => {
-                                                                    if (!gamePaused && gameRunning && speechEnabled) {
-                                                                        try {
-                                                                            const chineseExampleUtterance = new SpeechSynthesisUtterance(chineseExample);
-                                                                            chineseExampleUtterance.lang = 'zh-CN';
-                                                                            chineseExampleUtterance.rate = 1.0;
-                                                                            chineseExampleUtterance.pitch = 1.0;
-                                                                            chineseExampleUtterance.volume = 0.7;
-                                                                            
-                                                                            chineseExampleUtterance.onend = function() {
-                                                                                console.log('✅ 完整单词朗读结束');
-                                                                                wordReadingInProgress = false;
-                                                                                
-                                                                                // 设置自动切换计时器（5秒后如果目标敌机仍未被击中，自动切换）
-                                                                                autoSwitchTimeout = setTimeout(() => {
-                                                                                    if (gameRunning && !gamePaused) {
-                                                                                        console.log('⏰ 朗读完成后自动切换到下一个单词');
-                                                                                        selectNewTargetWord();
-                                                                                    }
-                                                                                }, 5000);
-                                                                            };
-                                                                            
-                                                                            speechSynthesis.speak(chineseExampleUtterance);
-                                                                        } catch (e) {
-                                                                            console.error('❌ 中文例句朗读错误:', e);
-                                                                        }
-                                                                    }
-                                                                }, englishExample.length * 50);
-                                                            }
-                                                        };
-                                                        
-                                                        speechSynthesis.speak(exampleUtterance);
-                                                    }
-                                                } catch (e) {
-                                                    console.error('❌ 英文例句朗读错误:', e);
-                                                }
-                                            } else {
-                                                // 没有例句，中文朗读完成后设置自动切换
-                                                console.log('✅ 中文朗读结束（无例句）');
-                                                wordReadingInProgress = false;
-                                                
-                                                // 设置自动切换计时器
-                                                autoSwitchTimeout = setTimeout(() => {
-                                                    if (gameRunning && !gamePaused) {
-                                                        console.log('⏰ 朗读完成后自动切换到下一个单词');
-                                                        selectNewTargetWord();
-                                                    }
-                                                }, 5000);
-                                            }
-                                        }, 800);
-                                    };
-                                    
-                                    speechSynthesis.speak(chineseUtterance);
-                                } catch (e) {
-                                    console.error('❌ 中文朗读错误:', e);
-                                }
-                            }
-                        }, 300);
-                    };
-                    
-                    // 开始朗读
-                    speechSynthesis.speak(englishUtterance);
-                    
-                } catch (error) {
-                    console.error('❌ playWordReading 错误:', error);
-                }
+                startReadingPhase(wordData);
             } else {
                 console.warn('⚠️ 浏览器不支持语音合成');
-                // 不支持语音合成时，仍然设置自动切换
-                wordReadingInProgress = false;
-                autoSwitchTimeout = setTimeout(() => {
-                    if (gameRunning && !gamePaused) {
-                        console.log('⏰ 无语音支持，自动切换到下一个单词');
-                        selectNewTargetWord();
-                    }
-                }, 3000); // 较短的等待时间
+                setTimeout(() => {
+                    completeWordReadingFlow();
+                }, 10000);
             }
+        }
+        
+        function startReadingPhase(wordData) {
+            try {
+                speechSynthesis.cancel(); // 取消任何正在进行的朗读
+                
+                switch(wordReadingPhase) {
+                    case 0:
+                        // 阶段1: 朗读英文单词
+                        console.log('📜 阶段1: 朗读英文单词 -', wordData.word);
+                        const englishUtterance = new SpeechSynthesisUtterance(wordData.word);
+                        englishUtterance.lang = 'en-US';
+                        englishUtterance.rate = 0.8;
+                        englishUtterance.pitch = 1.0;
+                        englishUtterance.volume = 0.8;
+                        
+                        englishUtterance.onend = function() {
+                            setTimeout(() => {
+                                wordReadingPhase = 1;
+                                startReadingPhase(wordData);
+                            }, 1000);
+                        };
+                        speechSynthesis.speak(englishUtterance);
+                        break;
+                        
+                    case 1:
+                        // 阶段2: 朗读中文释义
+                        console.log('📜 阶段2: 朗读中文释义 -', wordData.chinese);
+                        const chineseUtterance = new SpeechSynthesisUtterance(wordData.chinese);
+                        chineseUtterance.lang = 'zh-CN';
+                        chineseUtterance.rate = 1.0;
+                        chineseUtterance.pitch = 1.0;
+                        chineseUtterance.volume = 0.7;
+                        
+                        chineseUtterance.onend = function() {
+                            setTimeout(() => {
+                                wordReadingPhase = 2;
+                                startReadingPhase(wordData);
+                            }, 1000);
+                        };
+                        speechSynthesis.speak(chineseUtterance);
+                        break;
+                        
+                    case 2:
+                        // 阶段3: 朗读英文例句
+                        if (wordData.example && wordData.example.trim()) {
+                            const englishExample = extractEnglish(wordData.example);
+                            console.log('📜 阶段3: 朗读英文例句 -', englishExample);
+                            
+                            const englishExampleUtterance = new SpeechSynthesisUtterance(englishExample);
+                            englishExampleUtterance.lang = 'en-US';
+                            englishExampleUtterance.rate = 0.9;
+                            englishExampleUtterance.pitch = 1.0;
+                            englishExampleUtterance.volume = 0.8;
+                            
+                            englishExampleUtterance.onend = function() {
+                                setTimeout(() => {
+                                    wordReadingPhase = 3;
+                                    startReadingPhase(wordData);
+                                }, 1000);
+                            };
+                            speechSynthesis.speak(englishExampleUtterance);
+                        } else {
+                            // 没有例句，直接完成
+                            console.log('📜 阶段3: 无英文例句，跳过');
+                            completeWordReadingFlow();
+                        }
+                        break;
+                        
+                    case 3:
+                        // 阶段4: 朗读中文例句
+                        if (wordData.example && wordData.example.trim()) {
+                            const chineseExample = extractChinese(wordData.example);
+                            if (chineseExample && chineseExample.trim()) {
+                                console.log('📜 阶段4: 朗读中文例句 -', chineseExample);
+                                
+                                const chineseExampleUtterance = new SpeechSynthesisUtterance(chineseExample);
+                                chineseExampleUtterance.lang = 'zh-CN';
+                                chineseExampleUtterance.rate = 1.0;
+                                chineseExampleUtterance.pitch = 1.0;
+                                chineseExampleUtterance.volume = 0.7;
+                                
+                                chineseExampleUtterance.onend = function() {
+                                    setTimeout(() => {
+                                        completeWordReadingFlow();
+                                    }, 1000);
+                                };
+                                speechSynthesis.speak(chineseExampleUtterance);
+                            } else {
+                                console.log('📜 阶段4: 无中文例句，流程完成');
+                                completeWordReadingFlow();
+                            }
+                        } else {
+                            console.log('📜 阶段4: 无例句，流程完成');
+                            completeWordReadingFlow();
+                        }
+                }
+            } catch (error) {
+                console.error('❌ 朗读阶段错误:', error);
+                completeWordReadingFlow();
+            }
+        }
+        
+        function completeWordReadingFlow() {
+            console.log('✅ 完整单词朗读流程结束 - 现在可以切换到下一个单词');
+            wordReadingInProgress = false;
+            wordReadingComplete = true;
+            forceTargetSpawn = false; // 允许正常的敌机生成
+            
+            // 设置较长的自动切换时间（10秒后切换下一个单词，给玩家足够时间击中）
+            autoSwitchTimeout = setTimeout(() => {
+                if (gameRunning && !gamePaused) {
+                    console.log('⏰ 朗读流程完成很久了，自动切换到下一个单词');
+                    selectNewTargetWord();
+                }
+            }, 10000);
         }
         
         // 提取英文部分
@@ -1877,6 +1884,11 @@
             learnedWords = [];
             wordReadingInProgress = false;
             
+            // 初始化新的朗读流程状态
+            wordReadingPhase = 0;
+            wordReadingComplete = false;
+            forceTargetSpawn = true;
+            
             // 清除自动切换计时器
             if (autoSwitchTimeout) {
                 clearTimeout(autoSwitchTimeout);
@@ -1919,11 +1931,16 @@
             currentWordData = currentWords[randomIndex];
             targetWord = currentWordData.word;
             
+            // 重置状态变量
+            wordReadingComplete = false;
+            forceTargetSpawn = true; // 强制生成目标敌机直到朗读完成
+            
             // 更新UI显示
             document.getElementById('targetWord').textContent = `目标: ${targetWord}`;
             document.getElementById('targetChinese').textContent = currentWordData.chinese;
             
             console.log('🎯 新目标单词:', targetWord, currentWordData.chinese);
+            console.log('📢 开始完整朗读流程，目标敌机将反复出现');
             
             // 立即播放单词语音朗读
             if (speechEnabled && currentWordData) {
@@ -1956,19 +1973,36 @@
                 canvasWidth * 0.8
             ];
             
-            // 随机选择一个位置放置目标敌机
-            const targetPosition = Math.floor(Math.random() * 3);
+            // 决定目标敌机的生成策略
+            let targetPosition = -1; // -1表示不生成目标敌机
+            
+            if (forceTargetSpawn && !wordReadingComplete) {
+                // 朗读流程中：强制每次都生成目标敌机
+                targetPosition = Math.floor(Math.random() * 3);
+                console.log('🔄 强制生成目标敌机（朗读流程中）');
+            } else if (!wordReadingInProgress && wordReadingComplete) {
+                // 朗读完成后：正常随机生成（50%概率）
+                if (Math.random() < 0.5) {
+                    targetPosition = Math.floor(Math.random() * 3);
+                }
+            } else if (!wordReadingInProgress && !forceTargetSpawn) {
+                // 正常情况：40%概率生成目标敌机
+                if (Math.random() < 0.4) {
+                    targetPosition = Math.floor(Math.random() * 3);
+                }
+            }
             
             for (let i = 0; i < 3; i++) {
                 let enemyWord;
                 let isTarget = false;
                 
                 if (i === targetPosition) {
-                    // 目标敌机
+                    // 生成目标敌机
                     enemyWord = targetWord;
                     isTarget = true;
+                    console.log('🎯 生成目标敌机:', enemyWord);
                 } else {
-                    // 干扰敌机，选择不同的单词
+                    // 生成干扰敌机，选择不同的单词
                     do {
                         const randomIndex = Math.floor(Math.random() * currentWords.length);
                         enemyWord = currentWords[randomIndex].word;

@@ -108,7 +108,7 @@
             to { transform: translateX(0); }
         }
 
-        /* 开始界面样式 */
+        /* 开始界面样式 - 新的HomePage风格 */
         #startScreen {
             background: linear-gradient(135deg, 
                 rgba(26, 35, 126, 0.9), 
@@ -119,23 +119,359 @@
             padding: var(--spacing-2xl);
         }
 
+        /* 星空背景 */
+        .stars-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: twinkle 2s ease-in-out infinite;
+        }
+
+        .star:nth-child(1) {
+            top: 15%;
+            left: 20%;
+            animation-delay: 0s;
+        }
+
+        .star:nth-child(2) {
+            top: 25%;
+            right: 15%;
+            animation-delay: 0.5s;
+        }
+
+        .star:nth-child(3) {
+            top: 45%;
+            left: 10%;
+            animation-delay: 1s;
+        }
+
+        .star:nth-child(4) {
+            top: 65%;
+            right: 25%;
+            animation-delay: 1.5s;
+        }
+
+        .star:nth-child(5) {
+            bottom: 20%;
+            left: 50%;
+            animation-delay: 2s;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        /* 浮动单词装饰 */
+        .floating-words {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-word {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+            font-size: 1.2em;
+            animation: floatSlow 4s ease-in-out infinite;
+        }
+
+        .floating-word:nth-child(1) {
+            top: 12%;
+            left: 8%;
+            animation-delay: 0s;
+            font-size: 1.1em;
+        }
+
+        .floating-word:nth-child(2) {
+            top: 22%;
+            right: 12%;
+            animation-delay: 1s;
+            font-size: 0.9em;
+        }
+
+        .floating-word:nth-child(3) {
+            top: 38%;
+            left: 5%;
+            animation-delay: 2s;
+            font-size: 1.3em;
+        }
+
+        .floating-word:nth-child(4) {
+            bottom: 35%;
+            right: 8%;
+            animation-delay: 3s;
+            font-size: 1.0em;
+        }
+
+        .floating-word:nth-child(5) {
+            bottom: 15%;
+            left: 15%;
+            animation-delay: 4s;
+            font-size: 0.8em;
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); opacity: 0.2; }
+            50% { transform: translateY(-10px); opacity: 0.4; }
+        }
+
+        /* 飞机装饰图标 */
+        .plane-icon {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 100px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 100'%3E%3Cdefs%3E%3Cfilter id='shadow' x='-10%25' y='-10%25' width='120%25' height='120%25'%3E%3CfeDropShadow dx='2' dy='2' stdDeviation='1.5' flood-color='%23000' flood-opacity='0.3'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23shadow)'%3E%3Cpath d='M60,20 L40,50 L20,45 L15,55 L40,60 L50,80 L55,85 L65,85 L70,80 L80,60 L105,55 L100,45 L80,50 Z' fill='%23E3F2FD'/%3E%3Cpath d='M60,25 L45,50 L25,48 L22,52 L45,55 L52,75 L55,78 L65,78 L68,75 L75,55 L98,52 L95,48 L75,50 Z' fill='%23BBDEFB'/%3E%3Ccircle cx='60' cy='45' r='8' fill='%23FF5722'/%3E%3Cpath d='M52,45 Q60,35 68,45' stroke='%23FFC107' stroke-width='2' fill='none'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 2;
+        }
+
+        @keyframes animate-float {
+            0%, 100% { transform: translateX(-50%) translateY(0px); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        .animate-float {
+            animation: animate-float 3s ease-in-out infinite;
+        }
+
+        /* 游戏标题 */
+        .game-title-container {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+            z-index: 2;
+            position: relative;
+        }
+
         .game-title {
             font-size: 2.5rem;
+            color: var(--text-light);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: var(--spacing-sm);
             font-weight: bold;
-            margin-bottom: var(--spacing-xl);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            animation: titleGlow 2s ease-in-out infinite alternate;
         }
 
-        @keyframes titleGlow {
-            from { text-shadow: 2px 2px 4px rgba(76, 175, 80, 0.3); }
-            to { text-shadow: 2px 2px 8px rgba(76, 175, 80, 0.6); }
+        .fun-facts {
+            color: var(--text-light);
+            font-size: 1.1em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            margin-bottom: var(--spacing-lg);
         }
 
-        .game-subtitle {
+        /* 英雄区域 */
+        .hero-section {
+            text-align: center;
+            margin: var(--spacing-sm) 0;
+            z-index: 2;
+            position: relative;
+        }
+
+        /* 设置面板 */
+        .settings-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: var(--spacing-lg);
+            margin: var(--spacing-lg) 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .setting-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .setting-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-group label {
+            display: block;
+            color: var(--text-light);
+            font-size: 0.9em;
+            margin-bottom: var(--spacing-xs);
+            font-weight: 500;
+        }
+
+        /* 菜单按钮布局 */
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            align-items: center;
+            margin-top: var(--spacing-lg);
+            z-index: 2;
+            position: relative;
+        }
+
+        .primary-button {
+            background: linear-gradient(135deg, var(--laser-green), #45a049);
+            color: #ffffff !important;
+            border: none;
+            border-radius: 25px;
+            padding: var(--spacing-lg) var(--spacing-2xl);
             font-size: 1.1rem;
-            margin-bottom: var(--spacing-2xl);
-            opacity: 0.9;
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 200px;
+            min-height: 44px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            pointer-events: auto;
+        }
+
+        .start-button {
+            background: linear-gradient(135deg, #FF6B6B, #FF5252);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+
+        .start-button:hover {
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        .success-button {
+            background: linear-gradient(135deg, var(--laser-green), #43A047);
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 音乐控制按钮 */
+        .audio-controls {
+            position: absolute;
+            top: var(--spacing-lg);
+            right: var(--spacing-lg);
+            z-index: 10;
+        }
+
+        .audio-control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .audio-control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .audio-control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .audio-control-btn.muted {
+            background: rgba(255, 107, 107, 0.2);
+            border-color: rgba(255, 107, 107, 0.5);
+        }
+
+        .audio-control-btn.muted:hover {
+            background: rgba(255, 107, 107, 0.3);
+        }
+
+        /* 制作信息 */
+        .creator-info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8em;
+            text-align: center;
+            z-index: 2;
+        }
+
+        /* 动画类 */
+        .animate-slideInUp {
+            animation: slideInUp 0.8s ease-out;
+        }
+
+        .animate-scaleIn {
+            animation: scaleIn 0.6s ease-out;
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* 动画延迟 */
+        .hero-section {
+            animation-delay: 0.2s;
+        }
+
+        .menu-buttons {
+            animation-delay: 0.4s;
+        }
+
+        .creator-info {
+            animation-delay: 0.6s;
         }
 
         /* 按钮样式 */
@@ -715,10 +1051,13 @@
             user-select: none;
         }
 
-        /* 单词本界面样式 */
+        /* 单词本界面样式 - 新的VocabularyBook风格 */
         #vocabularyScreen {
-            background: #f5f7fa;
-            padding: 20px 5px;
+            background: linear-gradient(135deg, 
+                rgba(26, 35, 126, 0.9), 
+                rgba(0, 0, 81, 0.9)
+            );
+            padding: 0;
             overflow-y: auto;
             height: 100vh;
             box-sizing: border-box;
@@ -726,36 +1065,40 @@
         }
 
         .vocabulary-header {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-            display: flex;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
             align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 15px;
+            padding: var(--spacing-md);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .back-button {
-            background: #667eea;
-            color: white;
+            background: rgba(255, 255, 255, 0.2);
             border: none;
-            padding: 12px 20px;
-            border-radius: 12px;
+            color: white;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
         }
 
         .back-button:hover {
-            background: #5a67d8;
-            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-2px);
+        }
+
+        .vocabulary-header h2 {
+            color: white;
+            margin: 0;
+            text-align: center;
+            font-size: 1.4em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .search-container {
@@ -1096,48 +1439,485 @@
                 font-size: 12px;
             }
         }
+
+        /* 新单词本样式覆盖 - VocabularyBook风格 */
+        .search-container {
+            padding: var(--spacing-md) 0; /* 只保留上下padding */
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-container input {
+            width: 100%;
+            margin: 0 0 var(--spacing-sm) 0;
+            padding: 12px var(--spacing-md);
+            border: none;
+            border-radius: 20px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.9);
+            box-sizing: border-box;
+        }
+
+        .search-container input::placeholder {
+            color: #999;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: center;
+            margin: 0; /* 移除左右边距 */
+        }
+
+        .filter-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: transparent;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.6);
+            font-weight: bold;
+        }
+
+        .vocabulary-content {
+            flex: 1;
+            padding: 8px; /* 很小的padding */
+            overflow-y: auto;
+            max-height: calc(100vh - 220px);
+        }
+
+        .word-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .word-item {
+            background: white;
+            border-radius: 12px;
+            padding: 12px 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            width: 100%;
+            min-height: auto;
+        }
+
+        .word-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .word-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .word-main {
+            flex: 1;
+        }
+
+        .word-text {
+            font-size: 1.15em;
+            font-weight: bold;
+            color: #333;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .word-pronunciation {
+            font-size: 0.85em;
+            color: #888;
+            font-style: italic;
+            display: inline-block;
+        }
+
+        .word-controls {
+            display: flex;
+            gap: var(--spacing-xs);
+            align-items: center;
+        }
+
+        .play-button {
+            background: var(--laser-green);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+        }
+
+        .play-button:hover {
+            background: #45a049;
+            transform: scale(1.1);
+        }
+
+        .chinese-text {
+            color: #4CAF50;
+            font-weight: 500;
+            font-size: 1em;
+            display: inline-block;
+            margin-left: 0;
+        }
+
+        .example-text {
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.4;
+            margin-top: 6px;
+        }
+
+        .vocabulary-footer {
+            position: sticky;
+            bottom: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            gap: var(--spacing-md);
+        }
+
+        .vocab-stats {
+            color: white;
+            font-size: 0.85em;
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .pagination-controls button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-controls button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .pagination-controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #pageInfo {
+            color: white;
+            font-size: 0.85em;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .grade-selector select {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: var(--spacing-sm) 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+
+        /* 新游戏结束页面样式覆盖 - GameOver风格 */
+        #gameOverScreen {
+            background: linear-gradient(135deg, 
+                rgba(26, 35, 126, 0.9), 
+                rgba(0, 0, 81, 0.9)
+            ) !important;
+            padding: var(--spacing-md) !important;
+            overflow-y: auto !important;
+            max-height: 100vh !important;
+            box-sizing: border-box !important;
+            justify-content: flex-start !important;
+        }
+
+        .result-animation {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+            padding: var(--spacing-lg) 0;
+        }
+
+        .game-over-icon {
+            font-size: 4em;
+            margin-bottom: var(--spacing-md);
+            display: block;
+        }
+
+        .result-title {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: var(--text-light);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .result-subtitle {
+            font-size: 1.1em;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            line-height: 1.4;
+        }
+
+        .score-display {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-radius: 15px !important;
+            padding: var(--spacing-lg) !important;
+            margin-bottom: var(--spacing-lg) !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .final-score {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 2px solid #eee;
+        }
+
+        .score-label {
+            font-size: 1em !important;
+            color: #666 !important;
+            margin-bottom: var(--spacing-xs) !important;
+        }
+
+        .score-value {
+            font-size: 3.5em !important;
+            font-weight: bold !important;
+            color: var(--laser-green) !important;
+            text-shadow: 0 2px 4px rgba(76, 175, 80, 0.3) !important;
+            line-height: 1 !important;
+        }
+
+        .game-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-md);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            border-radius: 10px;
+            background: rgba(76, 175, 80, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            background: rgba(76, 175, 80, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            font-size: 1.5em;
+            min-width: 32px;
+            text-align: center;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: var(--text-dark);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .retry-button {
+            background: linear-gradient(135deg, #FF6B6B, #FF5252) !important;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4) !important;
+        }
+
+        .review-button {
+            background: linear-gradient(135deg, var(--laser-green), #43A047) !important;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4) !important;
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: var(--text-dark) !important;
+            border: 2px solid rgba(255, 255, 255, 0.5) !important;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 1) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+
+        .animate-scaleIn {
+            animation: scaleIn 0.6s ease-out;
+        }
+
+        .animate-slideInUp {
+            animation: slideInUp 0.8s ease-out;
+        }
+
+        .animate-shake {
+            animation: shake 0.8s ease-in-out;
+        }
     </style>
 </head>
 <body>
     <div class="phone-container">
         <!-- 开始界面 -->
         <div id="startScreen" class="screen active">
-            <h1 class="game-title">🚀 飞机射击单词</h1>
-            <p class="game-subtitle">边射击边学英语，寓教于乐的H5游戏</p>
-            
-            <div class="grade-selector">
-                <label for="gradeSelect">选择年级:</label>
-                <select id="gradeSelect" class="grade-select">
-                    <option value="1">一年级 (基础词汇)</option>
-                    <option value="2">二年级 (日常用词)</option>
-                    <option value="3" selected>三年级 (常用词汇)</option>
-                    <option value="4">四年级 (进阶词汇)</option>
-                    <option value="5">五年级 (高级词汇)</option>
-                    <option value="6">六年级 (复杂词汇)</option>
-                </select>
+            <!-- 背景装饰 -->
+            <div class="stars-background">
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
             </div>
-
-            <div class="grade-selector">
-                <label for="difficultySelect">游戏难度:</label>
-                <select id="difficultySelect" class="grade-select">
-                    <option value="easy">低 (慢速移动)</option>
-                    <option value="medium" selected>中 (中速移动)</option>
-                    <option value="hard">高 (快速移动)</option>
-                </select>
+            
+            <!-- 浮动单词 -->
+            <div class="floating-words">
+                <div class="floating-word">World</div>
+                <div class="floating-word">Happy</div>
+                <div class="floating-word">Learn</div>
+                <div class="floating-word">Game</div>
+                <div class="floating-word">Fun</div>
             </div>
-
-            <button id="startGameBtn" class="button">
-                <span class="loading" id="startLoading" style="display: none;"></span>
-                开始游戏 🎮
-            </button>
             
-            <button id="instructionsBtn" class="button button-secondary">
-                游戏说明 📖
-            </button>
+            <!-- 飞机装饰 -->
+            <div class="plane-icon animate-float"></div>
             
-            <button id="vocabularyBtn" class="button button-secondary">
-                单词本 📖
-            </button>
+            <!-- 主标题区域 -->
+            <div class="hero-section animate-slideInUp">
+                <div class="game-title-container">
+                    <h1 class="game-title">🚀 飞机射击单词</h1>
+                    <p class="fun-facts">💡 边射击边学，轻松记住2000+单词</p>
+                </div>
+                
+                <!-- 游戏设置面板 -->
+                <div class="settings-panel animate-scaleIn">
+                    <div class="setting-group">
+                        <label for="gradeSelect">单词范围</label>
+                        <select id="gradeSelect" class="grade-select">
+                            <option value="1">一年级 (基础单词)</option>
+                            <option value="2">二年级 (进阶单词)</option>
+                            <option value="3" selected>三年级 (中级单词)</option>
+                            <option value="4">四年级 (中高级单词)</option>
+                            <option value="5">五年级 (高级单词)</option>
+                            <option value="6">六年级 (专业单词)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="difficultySelect">游戏难度</label>
+                        <select id="difficultySelect" class="grade-select">
+                            <option value="easy">低 (慢速)</option>
+                            <option value="medium" selected>中 (中速)</option>
+                            <option value="hard">高 (快速)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 菜单按钮 -->
+            <div class="menu-buttons animate-slideInUp">
+                <button id="startGameBtn" class="primary-button start-button hover-lift">
+                    <span class="loading" id="startLoading" style="display: none;"></span>
+                    🎮 开始游戏
+                </button>
+                <button id="vocabularyBtn" class="primary-button success-button hover-lift">
+                    📚 单词本
+                </button>
+            </div>
+            
+            <!-- 音乐控制按钮 -->
+            <div class="audio-controls">
+                <button class="audio-control-btn" id="musicToggleBtn" onclick="toggleBackgroundMusic()" title="背景音乐开关">
+                    <span id="musicIcon">🎵</span>
+                </button>
+            </div>
+            
+            <!-- 制作信息 -->
+            <div class="creator-info animate-fadeIn">
+                制作by公众号:泡泡妈AI育儿搭子
+            </div>
         </div>
 
         <!-- 游戏界面 -->
@@ -1167,10 +1947,7 @@
                     </div>
                 </div>
                 
-                <!-- 音乐控制按钮 -->
-                <button class="music-toggle-btn" id="musicToggleBtn" onclick="toggleBackgroundMusic()">
-                    🎵
-                </button>
+                <!-- 音乐控制按钮已移至开始界面 -->
                 
                 <!-- 血槽显示 -->
                 <div class="health-bar" id="healthBar"></div>
@@ -1197,51 +1974,75 @@
 
         <!-- 游戏结束界面 -->
         <div id="gameOverScreen" class="screen">
-            <h2 class="game-over-title">🎯 游戏结束</h2>
-            
-            <div class="score-display">
-                <div class="score-item">
-                    <span class="score-label">最终得分</span>
-                    <span class="score-value" id="finalScore">0</span>
+            <!-- 游戏结果动画区域 -->
+            <div class="result-animation animate-scaleIn">
+                <div class="game-over-icon animate-shake">🚀💧</div>
+                <div class="result-title" id="resultTitle">游戏结束</div>
+                <div class="result-subtitle" id="resultSubtitle">继续努力，你一定可以的！</div>
+            </div>
+
+            <!-- 分数和成就展示 -->
+            <div class="score-display animate-slideInUp">
+                <div class="final-score">
+                    <div class="score-label">最终得分</div>
+                    <div class="score-value" id="finalScore">0</div>
                 </div>
-                <div class="score-item">
-                    <span class="score-label">击中敌机</span>
-                    <span class="score-value" id="enemiesHit">0</span>
-                </div>
-                <div class="score-item">
-                    <span class="score-label">正确单词</span>
-                    <span class="score-value" id="correctWords">0</span>
-                </div>
-                <div class="score-item">
-                    <span class="score-label">学习单词数</span>
-                    <span class="score-value" id="wordsLearned">0</span>
-                </div>
-                <div class="score-item">
-                    <span class="score-label">最高连击</span>
-                    <span class="score-value" id="maxCombo">0</span>
+                
+                <div class="game-stats">
+                    <div class="stat-item">
+                        <div class="stat-icon">📚</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="wordsLearned">0</div>
+                            <div class="stat-label">学会单词</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="accuracy">0%</div>
+                            <div class="stat-label">正确率</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="maxCombo">0</div>
+                            <div class="stat-label">最高连击</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="enemiesHit">0</div>
+                            <div class="stat-label">击中敌机</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <button id="playAgainBtn" class="button">
-                再玩一次 🔄
-            </button>
-            
-            <button id="viewWordsBtn" class="button button-secondary">
-                已学习单词 📖
-            </button>
-            
-            <button id="backToMenuBtn" class="button button-secondary">
-                返回主菜单 🏠
-            </button>
+            <!-- 操作按钮 -->
+            <div class="action-buttons animate-slideInUp">
+                <button id="playAgainBtn" class="primary-button retry-button hover-lift">
+                    🔄 重新开始
+                </button>
+                <button id="viewWordsBtn" class="primary-button review-button hover-lift">
+                    📚 查看单词本
+                </button>
+                <button id="backToMenuBtn" class="button back-button hover-lift">
+                    🏠 返回主界面
+                </button>
+            </div>
         </div>
 
         <!-- 单词本界面 -->
         <div id="vocabularyScreen" class="screen">
-            <div class="vocabulary-header">
-                <button class="back-button" onclick="backToMenu()">← 返回</button>
-                <div class="search-container">
-                    <input type="text" id="vocabSearch" placeholder="搜索单词..." oninput="searchWords()">
-                </div>
+            <!-- 单词本头部 -->
+            <div class="vocabulary-header animate-slideInDown">
+                <button class="back-button hover-scale" onclick="backToMenu()">← 返回</button>
+                <h2>📚 单词本</h2>
                 <div class="grade-selector">
                     <select id="vocabGradeSelect" onchange="changeVocabGrade()">
                         <option value="">全部年级</option>
@@ -1254,16 +2055,35 @@
                     </select>
                 </div>
             </div>
-            
-            <div id="wordList" class="word-list">
-                <!-- 单词列表将在这里动态生成 -->
+
+            <!-- 搜索和筛选 -->
+            <div class="search-container animate-slideInDown">
+                <input type="text" id="vocabSearch" placeholder="搜索单词..." oninput="searchWords()">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all" onclick="filterWords('all')">全部</button>
+                    <button class="filter-btn" data-filter="learned" onclick="filterWords('learned')">已学</button>
+                    <button class="filter-btn" data-filter="learning" onclick="filterWords('learning')">学习中</button>
+                </div>
             </div>
-            
-            <div class="pagination">
-                <button id="prevPage" onclick="changePage(-1)">上一页</button>
-                <span id="pageInfo">1 / 13</span>
-                <button id="nextPage" onclick="changePage(1)">下一页</button>
-                <span id="totalCount" class="total-count">总数: 130</span>
+
+            <!-- 单词内容区域 -->
+            <div class="vocabulary-content animate-fadeIn">
+                <div class="word-list" id="wordList">
+                    <!-- 单词列表将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <!-- 底部统计和分页 -->
+            <div class="vocabulary-footer animate-slideInUp">
+                <div class="vocab-stats">
+                    <span id="vocabCount">总数: 0</span>
+                    <span id="learnedCount">已学: 0</span>
+                </div>
+                <div class="pagination-controls">
+                    <button id="prevPage" onclick="changePage(-1)" disabled>上一页</button>
+                    <span id="pageInfo">1 / 1</span>
+                    <button id="nextPage" onclick="changePage(1)" disabled>下一页</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1581,10 +2401,13 @@
             
             // 初始化音乐按钮状态
             const musicBtn = document.getElementById('musicToggleBtn');
-            if (musicBtn) {
-                musicBtn.textContent = musicPlaying ? '🎵' : '🔇';
+            const musicIcon = document.getElementById('musicIcon');
+            if (musicBtn && musicIcon) {
+                musicIcon.textContent = musicPlaying ? '🎵' : '🔇';
                 if (!musicPlaying) {
                     musicBtn.classList.add('muted');
+                } else {
+                    musicBtn.classList.remove('muted');
                 }
             }
             
@@ -2045,12 +2868,13 @@
         }
         
         class Enemy {
-            constructor(x, y, word, isTarget = false) {
+            constructor(x, y, word, chinese, isTarget = false) {
                 this.x = x;
                 this.y = y;
                 this.width = 35;
-                this.height = 40;
+                this.height = 45; // 增加高度以适配双行文字
                 this.word = word;
+                this.chinese = chinese || ''; // 中文释义
                 this.isTarget = isTarget;
                 this.speed = this.getDifficultySpeed();
                 this.health = 1; // 所有敌机一击消灭
@@ -2113,14 +2937,21 @@
                 // 清除阴影
                 ctx.shadowBlur = 0;
                 
-                // 绘制单词
+                // 绘制英文单词（上行）
                 ctx.fillStyle = 'white';
-                ctx.font = 'bold 12px Arial';
+                ctx.font = 'bold 10px Arial';
                 ctx.textAlign = 'center';
                 ctx.strokeStyle = 'black';
-                ctx.lineWidth = 2;
-                ctx.strokeText(this.word, this.x, this.y + 3);
-                ctx.fillText(this.word, this.x, this.y + 3);
+                ctx.lineWidth = 1.2;
+                ctx.strokeText(this.word, this.x, this.y - 5);
+                ctx.fillText(this.word, this.x, this.y - 5);
+                
+                // 绘制中文释义（下行）
+                if (this.chinese) {
+                    ctx.font = 'bold 9px Arial';
+                    ctx.strokeText(this.chinese, this.x, this.y + 8);
+                    ctx.fillText(this.chinese, this.x, this.y + 8);
+                }
                 
                 // 目标敌机特殊标记 - 金色光环
                 if (this.isTarget) {
@@ -2353,22 +3184,28 @@
             
             for (let i = 0; i < 3; i++) {
                 let enemyWord;
+                let enemyChinese;
                 let isTarget = false;
                 
                 if (i === targetPosition) {
                     // 生成目标敌机
                     enemyWord = targetWord;
                     isTarget = true;
-                    console.log('🎯 生成目标敌机:', enemyWord);
+                    // 查找目标单词的中文释义
+                    const targetWordObj = currentWords.find(w => w.word === targetWord);
+                    enemyChinese = targetWordObj ? targetWordObj.chinese : '';
+                    console.log('🎯 生成目标敌机:', enemyWord, enemyChinese);
                 } else {
                     // 生成干扰敌机，选择不同的单词
+                    let randomIndex;
                     do {
-                        const randomIndex = Math.floor(Math.random() * currentWords.length);
+                        randomIndex = Math.floor(Math.random() * currentWords.length);
                         enemyWord = currentWords[randomIndex].word;
                     } while (enemyWord === targetWord);
+                    enemyChinese = currentWords[randomIndex].chinese || '';
                 }
                 
-                const enemy = new Enemy(positions[i], -50, enemyWord, isTarget);
+                const enemy = new Enemy(positions[i], -50, enemyWord, enemyChinese, isTarget);
                 enemies.push(enemy);
             }
         }
@@ -2737,12 +3574,31 @@
             // 停止所有音频
             stopAllAudio();
             
+            // 计算正确率
+            const totalShots = enemiesHitCount + (bullets.length > 0 ? 1 : 0); // 简单估算
+            const accuracy = enemiesHitCount > 0 ? Math.round((correctWordsCount / enemiesHitCount) * 100) : 0;
+            
             // 更新结束界面数据
             document.getElementById('finalScore').textContent = score;
             document.getElementById('enemiesHit').textContent = enemiesHitCount;
-            document.getElementById('correctWords').textContent = correctWordsCount;
-            document.getElementById('wordsLearned').textContent = correctWordsCount; // 简化为击中的正确单词数
+            document.getElementById('wordsLearned').textContent = correctWordsCount;
             document.getElementById('maxCombo').textContent = maxCombo;
+            document.getElementById('accuracy').textContent = `${accuracy}%`;
+            
+            // 更新结果标题和副标题
+            const resultTitle = document.getElementById('resultTitle');
+            const resultSubtitle = document.getElementById('resultSubtitle');
+            
+            if (correctWordsCount >= 20) {
+                resultTitle.textContent = '🏆 优秀表现！';
+                resultSubtitle.textContent = '你是真正的单词大师！';
+            } else if (correctWordsCount >= 10) {
+                resultTitle.textContent = '👍 不错的表现！';
+                resultSubtitle.textContent = '继续努力，你会更棒的！';
+            } else {
+                resultTitle.textContent = '🎯 游戏结束';
+                resultSubtitle.textContent = '多多练习，你一定可以的！';
+            }
             
             // 切换到游戏结束界面
             switchScreen('gameOverScreen');
@@ -2823,30 +3679,30 @@
                 const sentence = wordObj.sentence || wordObj.meaning || '';
                 const chineseSentence = wordObj.chineseSentence || '';
                 
+                const statusClass = isLearned ? 'learned' : 'learning';
+                
                 html += `
-                    <div class="word-card">
-                        <div class="word-content">
-                            <div class="word-header">
-                                <div class="word-title">${wordObj.word}${isLearned ? '<span class="learned-mark">✓</span>' : ''}</div>
-                                <div class="word-meta">
-                                    <span class="word-phonetic">/${phonetic}/</span>
-                                    <span class="word-chinese">${chinese}</span>
-                                </div>
+                    <div class="word-item ${statusClass}">
+                        <div class="word-item-header">
+                            <div class="word-main">
+                                <span class="word-text">${wordObj.word}</span>
+                                <span class="word-pronunciation">/${phonetic}/</span>
+                                <span class="chinese-text">${chinese}</span>
                             </div>
-                            ${sentence ? `<div class="word-sentence">${sentence}</div>` : ''}
-                            ${chineseSentence ? `<div class="word-sentence-chinese">${chineseSentence}</div>` : ''}
+                            <div class="word-controls">
+                                <button class="play-button" onclick="playWordAudio('${wordObj.word}', '${chinese}', '${sentence}')" title="播放发音">
+                                    🔊
+                                </button>
+                            </div>
                         </div>
-                        <button class="word-play-btn" onclick="playWordAudio('${wordObj.word}', '${chinese}', '${sentence}')">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-                            </svg>
-                        </button>
+                        ${sentence || chineseSentence ? `<div class="example-text">${sentence}${chineseSentence ? ' ' + chineseSentence : ''}</div>` : ''}
                     </div>
                 `;
             });
             
             wordListDiv.innerHTML = html;
             updatePagination();
+            updateVocabStats();
         }
         
         function getPhonetic(word) {
@@ -2915,6 +3771,55 @@
             
             currentVocabPage = 1;
             displayWords();
+            updateVocabStats();
+        }
+
+        function filterWords(filterType) {
+            // 更新筛选按钮状态
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-filter="${filterType}"]`).classList.add('active');
+
+            // 筛选单词
+            switch (filterType) {
+                case 'all':
+                    // 显示所有单词（按年级过滤）
+                    if (currentVocabGrade === '') {
+                        filteredWords = [...vocabularyWords];
+                    } else {
+                        filteredWords = vocabularyWords.filter(word => word.grade == currentVocabGrade);
+                    }
+                    break;
+                case 'learned':
+                    // 只显示已学单词
+                    const baseWords = currentVocabGrade === '' ? vocabularyWords : vocabularyWords.filter(word => word.grade == currentVocabGrade);
+                    filteredWords = baseWords.filter(word => learnedWords.some(learned => learned.word === word.word));
+                    break;
+                case 'learning':
+                    // 显示学习中的单词（这里可以根据具体需求定义）
+                    const baseWords2 = currentVocabGrade === '' ? vocabularyWords : vocabularyWords.filter(word => word.grade == currentVocabGrade);
+                    // 假设学习中是指在learnedWords中但需要巩固的单词，这里简单处理
+                    filteredWords = baseWords2.filter(word => !learnedWords.some(learned => learned.word === word.word));
+                    break;
+                default:
+                    filteredWords = [...vocabularyWords];
+            }
+
+            currentVocabPage = 1;
+            displayWords();
+            updateVocabStats();
+        }
+
+        function updateVocabStats() {
+            const totalCount = filteredWords.length;
+            const learnedCount = filteredWords.filter(word => learnedWords.some(learned => learned.word === word.word)).length;
+            
+            const vocabCountElem = document.getElementById('vocabCount');
+            const learnedCountElem = document.getElementById('learnedCount');
+            
+            if (vocabCountElem) vocabCountElem.textContent = `总数: ${totalCount}`;
+            if (learnedCountElem) learnedCountElem.textContent = `已学: ${learnedCount}`;
         }
         
         function playWordAudio(word, chinese, sentence) {
@@ -3182,6 +4087,7 @@
         function toggleBackgroundMusic() {
             musicPlaying = !musicPlaying;
             const musicBtn = document.getElementById('musicToggleBtn');
+            const musicIcon = document.getElementById('musicIcon');
             
             if (musicPlaying) {
                 // 开启背景音乐
@@ -3203,8 +4109,8 @@
                 }
                 
                 // 更新按钮状态
-                musicBtn.textContent = '🎵';
-                musicBtn.classList.remove('muted');
+                if (musicIcon) musicIcon.textContent = '🎵';
+                if (musicBtn) musicBtn.classList.remove('muted');
                 console.log('🎵 背景音乐已开启');
             } else {
                 // 暂停背景音乐
@@ -3227,8 +4133,8 @@
                 }
                 
                 // 更新按钮状态
-                musicBtn.textContent = '🔇';
-                musicBtn.classList.add('muted');
+                if (musicIcon) musicIcon.textContent = '🔇';
+                if (musicBtn) musicBtn.classList.add('muted');
                 console.log('🔇 背景音乐已暂停');
             }
         }
